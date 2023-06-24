@@ -1,0 +1,20 @@
+<resources>
+
+    <string name="app_name">Nine</string>
+
+    <!-- Strings used in the enu screen-->
+    <string name="to_play_message">Swipe to play!</string>
+
+
+    <!-- Strings used in the scoreboard screen-->
+    <string name="scoreboard_screen_title">Scoreboard</string>
+    <string name="rank_column_header">Rank</string>
+    <string name="time_column_header">Time</string>
+    <string name="date_column_header">Date</string>
+    <string name="game_mode_column_header">Game mode</string>
+
+
+    <!-- Strings used in the options screen -->
+    <string name="option_screen_title">Options</string>
+
+</resources>
