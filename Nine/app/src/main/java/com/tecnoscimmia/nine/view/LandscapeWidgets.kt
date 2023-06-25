@@ -25,12 +25,12 @@ import com.tecnoscimmia.nine.ui.theme.NineIconStyle
 
 // This widget contains the settings and scoreboard buttons and the application title
 @Composable
-fun MenuPanelLandscape()
+fun MenuPanelLandscape(onClickSettings: () -> Unit, onClickScoreboard: () -> Unit)
 {
 	Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
 	{
 		// Settings button
-		ButtonWithIcon(onClick = { /*TODO*/ }, btnShape = RoundedCornerShape(bottomEnd = NineButtonStyle.cornerRadius),
+		ButtonWithIcon(onClick = onClickSettings, btnShape = RoundedCornerShape(bottomEnd = NineButtonStyle.cornerRadius),
 			btnModifier = Modifier.size(width = NineButtonStyle.longWidth, height = NineButtonStyle.normalHeight),
 			iconId = NineIconStyle.settings, iconColor = NineColors.settingsGrey)
 
@@ -47,7 +47,7 @@ fun MenuPanelLandscape()
 		}
 
 		// Scoreboard button
-		ButtonWithIcon(onClick = { /*TODO*/ }, btnShape = RoundedCornerShape(bottomStart = NineButtonStyle.cornerRadius),
+		ButtonWithIcon(onClick = onClickScoreboard, btnShape = RoundedCornerShape(bottomStart = NineButtonStyle.cornerRadius),
 			btnModifier = Modifier.size(width = NineButtonStyle.longWidth, height = NineButtonStyle.normalHeight),
 			iconId = NineIconStyle.trophy, iconColor = NineColors.gold
 		)

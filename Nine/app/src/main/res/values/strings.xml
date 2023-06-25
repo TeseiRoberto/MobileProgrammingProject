@@ -15,6 +15,6 @@
 
 
     <!-- Strings used in the options screen -->
-    <string name="option_screen_title">Options</string>
+    <string name="settings_screen_title">Settings</string>
 
 </resources>
