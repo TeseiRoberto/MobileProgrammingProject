@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -28,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.tecnoscimmia.nine.R
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
 import com.tecnoscimmia.nine.ui.theme.NineIconStyle
@@ -65,6 +67,29 @@ fun ButtonWithIcon(btnModifier: Modifier = NineButtonStyle.defaultModifier, onCl
 }
 
 
+// A simple button with an arrow icon positioned at the bottom left, it's used to go back to the previous screen, of the onClick
+// callback is given then it's executed after the screen has changed
+@Composable
+fun GoBackButton(navigationCntrl: NavHostController, onClick: ( () -> Unit)? = null)
+{
+	// Lambda called when the back button is clicked, had to add explicit return type because popBackStack returns a Boolean and
+	// being the only instruction it's result would be returned by the lambda
+	val onClickBackBtn = {
+		navigationCntrl.popBackStack(route = NineScreen.MainMenu.name, inclusive = false)
+
+		if(onClick != null)
+			onClick()
+
+		Unit
+	}
+
+	Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Bottom)
+	{
+		ButtonWithIcon(onClick = onClickBackBtn, iconId = NineIconStyle.leftArrow_round, btnShape = RoundedCornerShape(topEnd = NineButtonStyle.cornerRadius))
+	}
+}
+
+
 // A row with 2 buttons used to change the game mode and some text that displays the game mode currently selected
 @Composable
 fun GameModeSelector(availableModes: List<String>, currMode: Int = 0)
@@ -80,7 +105,7 @@ fun GameModeSelector(availableModes: List<String>, currMode: Int = 0)
 		)
 
 		// Current game mode selected
-		Text(text = if(currMode in availableModes.indices) availableModes[currMode] else "",
+		Text(text = if(currMode in availableModes.indices) availableModes[currGameMode.value] else "",
 			fontWeight = NineTextStyle.subTitle.fontWeight,
 			fontSize = NineTextStyle.subTitle.fontSize
 		)

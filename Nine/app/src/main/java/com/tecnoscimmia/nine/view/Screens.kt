@@ -2,18 +2,16 @@ package com.tecnoscimmia.nine.view
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavHostController
 import com.tecnoscimmia.nine.R
-import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
-import com.tecnoscimmia.nine.ui.theme.NineIconStyle
+import com.tecnoscimmia.nine.controller.GameController
+import com.tecnoscimmia.nine.controller.MainController
+import com.tecnoscimmia.nine.controller.ScoreboardController
+import com.tecnoscimmia.nine.controller.SettingsController
 
 /*
  * This file contains the definitions of all the screens that the application is composed of
@@ -24,22 +22,17 @@ enum class NineScreen { MainMenu, Scoreboard, Settings, Game }
 
 
 @Composable
-fun MenuScreen(isLandscape: Boolean, navigationCntrl: NavHostController)
+fun MenuScreen(cntrl: MainController, isLandscape: Boolean)
 {
-	// Define lambdas that will be called when the user interacts with the interface to change screen
-	val onClickSettingsBtn 		= { navigationCntrl.navigate(route = NineScreen.Settings.name) }
-	val onClickScoreboardBtn 	= { navigationCntrl.navigate(route = NineScreen.Scoreboard.name) }
-	//val onSwipeGameStarter 		= { navigationCntrl.navigate(route = NineScreen.Game.name) }
-
 	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
 		if(isLandscape)
 		{
-			MenuPanelLandscape(onClickSettings = onClickSettingsBtn, onClickScoreboard = onClickScoreboardBtn)
-			GameStarter(250f, 200f, onSwipe = { /*TODO*/ }, swipeThreshold = 300f, maxIconScale = 4f)
+			MenuPanelLandscape(onClickSettings = cntrl::SwitchToSettingsScreen, onClickScoreboard = cntrl::SwitchToScoreboardScreen)
+			GameStarter(250f, 200f, onSwipe = cntrl::startGame, swipeThreshold = 300f, maxIconScale = 4f)
 		} else {
-			MenuPanelPortrait(onClickSettings = onClickSettingsBtn, onClickScoreboard = onClickScoreboardBtn)
-			GameStarter(230f, 300f, onSwipe = { /*TODO*/ }, swipeThreshold = 300f, maxIconScale = 4f)
+			MenuPanelPortrait(onClickSettings = cntrl::SwitchToSettingsScreen, onClickScoreboard = cntrl::SwitchToScoreboardScreen)
+			GameStarter(230f, 300f, onSwipe = cntrl::startGame, swipeThreshold = 300f, maxIconScale = 4f)
 		}
 
 		GameModeSelector(availableModes = listOf("free", "challenge"), currMode = 0)
@@ -48,12 +41,8 @@ fun MenuScreen(isLandscape: Boolean, navigationCntrl: NavHostController)
 
 
 @Composable
-fun ScoreboardScreen(isLandscape: Boolean, navigationCntrl: NavHostController)
+fun ScoreboardScreen(cntrl: ScoreboardController, isLandscape: Boolean)
 {
-	// Lambda called when the back button is clicked, had to add explicit return type because popBackStack returns a Boolean and
-	// being the only instruction it's result would be returned by the lambda
-	val onClickBackBtn = { navigationCntrl.popBackStack(route = NineScreen.MainMenu.name, inclusive = false); Unit }
-
 	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
 		ScreenTitle(title = stringResource(id = R.string.scoreboard_screen_title))
@@ -67,42 +56,26 @@ fun ScoreboardScreen(isLandscape: Boolean, navigationCntrl: NavHostController)
 		for(i in 0..5)
 			ScoreboardEntry(rank = testRank[i], time = testTime[i], date = testDate[i], gameMode = gameModeTest[i])*/
 
-		// Back button TODO: maybe the back button should be a composable on it's own because it's used also in the settings screen
-		Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Bottom)
-		{
-			ButtonWithIcon(onClick = onClickBackBtn, iconId = NineIconStyle.leftArrow_round,
-				btnShape = RoundedCornerShape(topEnd = NineButtonStyle.cornerRadius)
-			)
-		}
+		GoBackButton(cntrl.navigationCntrl)
 	}
 }
 
 
 @Composable
-fun SettingsScreen(isLandscape: Boolean, navigationCntrl: NavHostController)
+fun SettingsScreen(cntrl: SettingsController, isLandscape: Boolean)
 {
-	// Lambda called when the back button is clicked, had to add explicit return type because popBackStack returns a Boolean and
-	// being the only instruction it's result would be returned by the lambda
-	val onClickBackBtn = { navigationCntrl.popBackStack(route = NineScreen.MainMenu.name, inclusive = false); Unit }
-
 	Column()
 	{
 		ScreenTitle(title = stringResource(id = R.string.settings_screen_title))
 		// TODO: Add implementation...
 
-		// Back button TODO: maybe the back button should be a composable on it's own because it's used also in the scoreboard screen
-		Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Bottom)
-		{
-			ButtonWithIcon(onClick = onClickBackBtn, iconId = NineIconStyle.leftArrow_round,
-				btnShape = RoundedCornerShape(topEnd = NineButtonStyle.cornerRadius)
-			)
-		}
+		GoBackButton(cntrl.navigationCntrl)
 	}
 }
 
 
 @Composable
-fun GameScreen(isLandscape: Boolean, navigationCntrl: NavHostController)
+fun GameScreen(cntrl: GameController, isLandscape: Boolean)
 {
 	Column()
 	{
