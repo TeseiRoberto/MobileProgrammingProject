@@ -8,11 +8,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,10 +33,13 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.tecnoscimmia.nine.R
+import com.tecnoscimmia.nine.model.MatchResult
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
+import com.tecnoscimmia.nine.ui.theme.NineColors
 import com.tecnoscimmia.nine.ui.theme.NineIconStyle
 import com.tecnoscimmia.nine.ui.theme.NineTextStyle
 
@@ -45,7 +53,7 @@ import com.tecnoscimmia.nine.ui.theme.NineTextStyle
 @Composable
 fun ScreenTitle(title: String)
 {
-	Text(text = title, fontSize = NineTextStyle.title.fontSize,
+	Text(modifier = Modifier.padding(vertical = 12.dp), text = title, fontSize = NineTextStyle.title.fontSize,
 		fontWeight = NineTextStyle.title.fontWeight, fontFamily = NineTextStyle.title.fontFamily)
 }
 
@@ -165,8 +173,9 @@ fun GameStarter(width: Float, height: Float, onSwipe: () -> Unit, swipeThreshold
 	{
 		Box(modifier = modifier, contentAlignment = Alignment.Center)
 		{
-			Icon(modifier = Modifier.scale(scaleX = 1f, scaleY = currScale.value)
-					.size(width = NineIconStyle.longWidth, height = NineIconStyle.normalHeight),
+			Icon(modifier = Modifier
+				.scale(scaleX = 1f, scaleY = currScale.value)
+				.size(width = NineIconStyle.longWidth, height = NineIconStyle.normalHeight),
 					painter = painterResource(NineIconStyle.hourglass), contentDescription = null)
 		}
 
@@ -175,41 +184,88 @@ fun GameStarter(width: Float, height: Float, onSwipe: () -> Unit, swipeThreshold
 	}
 }
 
-/* // TODO: Adjust the alignment of elements on different rows
-// A row that contains data about a game played, it's used in the scoreboard screen
+
+// A lazy column used to display some data about matches played in the past, it's used in the scoreboard screen
+@Composable
+fun Scoreboard(data: List<MatchResult>, widthOccupation: Float, heightOccupation: Float)
+{
+	Column(modifier = Modifier.fillMaxWidth(widthOccupation).fillMaxHeight(heightOccupation),
+		horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Top)
+	{
+		Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+			horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
+		{
+			// Rank column header
+			Text(text = stringResource(R.string.rank_column_header), modifier = Modifier.weight(0.5f),
+				fontWeight = NineTextStyle.subTitle.fontWeight, fontFamily = NineTextStyle.subTitle.fontFamily,
+				fontSize = NineTextStyle.subTitle.fontSize, textAlign = TextAlign.Center)
+
+			// Time column header
+			Text(text = stringResource(R.string.time_column_header), modifier = Modifier.weight(0.5f),
+				fontWeight = NineTextStyle.subTitle.fontWeight, fontFamily = NineTextStyle.subTitle.fontFamily,
+				fontSize = NineTextStyle.subTitle.fontSize, textAlign = TextAlign.Center)
+
+			// Date column header
+			Text(text = stringResource(R.string.date_column_header), modifier = Modifier.weight(0.5f),
+				fontWeight = NineTextStyle.subTitle.fontWeight, fontFamily = NineTextStyle.subTitle.fontFamily,
+				fontSize = NineTextStyle.subTitle.fontSize, textAlign = TextAlign.Center)
+
+			// Game mode column header
+			Text(text = stringResource(R.string.game_mode_column_header), modifier = Modifier.weight(0.5f),
+				fontWeight = NineTextStyle.subTitle.fontWeight, fontFamily = NineTextStyle.subTitle.fontFamily,
+				fontSize = NineTextStyle.subTitle.fontSize, textAlign = TextAlign.Center)
+		}
+
+		LazyColumn(modifier = Modifier.fillMaxWidth())
+		{
+			itemsIndexed(data)
+			{ index, match ->
+				ScoreboardEntry(rank = index + 1, time = match.time, date = match.date, gameMode = match.gameMode)
+			}
+		}
+	}
+}
+
+
+// A row that contains data about a match played, it's used in the scoreboard widget
 @Composable
 fun ScoreboardEntry(rank: Int, time: String, date: String, gameMode: String)
 {
-	Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
+	Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 6.dp))
 	{
-		// If rank is in top 3 then draw the trophy icon
-		if(rank in 1..3)
+		Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp),
+			horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
 		{
-			Icon(painterResource(id = NineIconStyle.trophy), contentDescription = null,
-				modifier = Modifier.size(width = NineIconStyle.shortWidth, height = NineIconStyle.shortHeight),
-				tint = when(rank)
-				{
-					1 -> NineColors.gold
-					2 -> NineColors.silver
-					3 -> NineColors.bronze
-					else -> Color.Black
-				}
-			)
-		} else {	// Otherwise just the text
-			Text(text = rank.toString(), fontWeight = NineTextStyle.simple.fontWeight,
-				fontFamily = NineTextStyle.simple.fontFamily, fontSize = NineTextStyle.simple.fontSize)
+			// If rank is in top 3 then draw the trophy icon
+			if(rank in 1..3)
+			{
+				Icon(painterResource(id = NineIconStyle.trophy), contentDescription = null,
+					modifier = Modifier.size(width = NineIconStyle.shortWidth, height = NineIconStyle.shortHeight).weight(0.5f),
+					tint = when(rank)
+					{
+						1 -> NineColors.gold
+						2 -> NineColors.silver
+						3 -> NineColors.bronze
+						else -> Color.Black
+					}
+				)
+			} else {	// Otherwise just the text
+				Text(text = rank.toString(), modifier = Modifier.weight(0.5f),
+					fontWeight = NineTextStyle.subTitle.fontWeight, fontFamily = NineTextStyle.simple.fontFamily,
+					fontSize = NineTextStyle.simple.fontSize, textAlign = TextAlign.Center)
+			}
+
+			// Time
+			Text(text = time, modifier = Modifier.weight(0.5f), fontWeight = NineTextStyle.simple.fontWeight,
+				fontFamily = NineTextStyle.simple.fontFamily, fontSize = NineTextStyle.simple.fontSize, textAlign = TextAlign.Center)
+
+			// Date
+			Text(text = date, modifier = Modifier.weight(0.7f), fontWeight = NineTextStyle.simple.fontWeight,
+				fontFamily = NineTextStyle.simple.fontFamily, fontSize = NineTextStyle.simple.fontSize, textAlign = TextAlign.Center)
+
+			// Game mode
+			Text(text = gameMode, modifier = Modifier.weight(0.5f), fontWeight = NineTextStyle.simple.fontWeight,
+				fontFamily = NineTextStyle.simple.fontFamily, fontSize = NineTextStyle.simple.fontSize, textAlign = TextAlign.Center)
 		}
-
-		// Time
-		Text(text = time, fontWeight = NineTextStyle.simple.fontWeight,
-			fontFamily = NineTextStyle.simple.fontFamily, fontSize = NineTextStyle.simple.fontSize)
-
-		// Date
-		Text(text = date, fontWeight = NineTextStyle.simple.fontWeight,
-			fontFamily = NineTextStyle.simple.fontFamily, fontSize = NineTextStyle.simple.fontSize)
-
-		// Game mode
-		Text(text = gameMode, fontWeight = NineTextStyle.simple.fontWeight,
-			fontFamily = NineTextStyle.simple.fontFamily, fontSize = NineTextStyle.simple.fontSize)
 	}
-}*/
+}

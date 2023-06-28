@@ -12,6 +12,7 @@ import com.tecnoscimmia.nine.controller.GameController
 import com.tecnoscimmia.nine.controller.MainController
 import com.tecnoscimmia.nine.controller.ScoreboardController
 import com.tecnoscimmia.nine.controller.SettingsController
+import com.tecnoscimmia.nine.model.MatchResult
 
 /*
  * This file contains the definitions of all the screens that the application is composed of
@@ -43,18 +44,35 @@ fun MenuScreen(cntrl: MainController, isLandscape: Boolean)
 @Composable
 fun ScoreboardScreen(cntrl: ScoreboardController, isLandscape: Boolean)
 {
+	// TODO: Some test data that needs to be removed after tests!
+	val testData = listOf(
+		MatchResult(time = "21:00", date = "18/08/2015", gameMode = "Free"),
+		MatchResult(time = "1:50", date = "12/04/2023", gameMode = "Free"),
+		MatchResult(time = "2:00", date = "31/01/2044", gameMode = "Challenge"),
+		MatchResult(time = "1:00", date = "1/11/202020", gameMode = "Free"),
+		MatchResult(time = "08:59:12", date = "7/33/1245", gameMode = "Free"),
+		MatchResult(time = "08:59:12", date = "7/33/1245", gameMode = "Free"),
+		MatchResult(time = "08:59:12", date = "7/33/1245", gameMode = "Challenge"),
+		MatchResult(time = "18:01", date = "7/33/1245", gameMode = "Free"),
+		MatchResult(time = "08:59:12", date = "7/33/1245", gameMode = "Free"),
+		MatchResult(time = "08:59:12", date = "7/33/1245", gameMode = "Challenge"),
+		MatchResult(time = "08:59:12", date = "7/33/1245", gameMode = "Free"),
+		MatchResult(time = "08:59:12", date = "7/33/1245", gameMode = "Free"),
+		MatchResult(time = "08:59:12", date = "7/33/1245", gameMode = "Free"),
+		MatchResult(time = "08:59:12", date = "7/33/1245", gameMode = "Challenge"),
+		MatchResult(time = "08:59:12", date = "7/33/1245", gameMode = "Free"),
+		MatchResult(time = "08:59:12", date = "7/33/1245", gameMode = "Free"),
+		MatchResult(time = "08:59:12", date = "7/33/1245", gameMode = "Challenge"),
+		)
+
 	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
 		ScreenTitle(title = stringResource(id = R.string.scoreboard_screen_title))
 
-		/* TODO: Add lazy list that shows the results of all games played
-		val testRank = listOf(1, 2, 3, 4, 5, 6)
-		val testTime = listOf("01:00", "1:00", "1:19", "2:45", "99:73", "1234:00")
-		val testDate = listOf("02/01/1999", "26/08/1913", "12/04/2034", "01/08/1945", "99/73/44444", "1234/00/0900")
-		val gameModeTest = listOf("free", "free", "challenge", "free", "lalalalalalal", "free")
-
-		for(i in 0..5)
-			ScoreboardEntry(rank = testRank[i], time = testTime[i], date = testDate[i], gameMode = gameModeTest[i])*/
+		if(isLandscape)
+			Scoreboard(data = testData, widthOccupation = 0.8f, heightOccupation = 0.6f)
+		else
+			Scoreboard(data = testData, widthOccupation = 1f, heightOccupation = 0.9f)
 
 		GoBackButton(cntrl.navigationCntrl)
 	}
@@ -68,6 +86,11 @@ fun SettingsScreen(cntrl: SettingsController, isLandscape: Boolean)
 	{
 		ScreenTitle(title = stringResource(id = R.string.settings_screen_title))
 		// TODO: Add implementation...
+
+		if(isLandscape)
+			// TODO
+			else
+				// TODO
 
 		GoBackButton(cntrl.navigationCntrl)
 	}

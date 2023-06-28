@@ -62,7 +62,10 @@ fun Test() // TODO: Remove this preview function
 			}
 		}
 
-		Surface(modifier = Modifier.fillMaxSize(), content = { MenuScreen(cntrl = mainCntrl, isLandscape = isLandscape) } )
+		//Surface(modifier = Modifier.fillMaxSize(), content = { MenuScreen(cntrl = mainCntrl, isLandscape = isLandscape) } )
+
+		val scoreboardCntrl = ScoreboardController(mainCntrl.navigationCntrl)
+		Surface(modifier = Modifier.fillMaxSize(), content = { ScoreboardScreen(cntrl = scoreboardCntrl, isLandscape = isLandscape) } )
 	}
 }
 
