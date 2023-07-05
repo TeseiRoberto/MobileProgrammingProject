@@ -18,9 +18,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,11 +40,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.tecnoscimmia.nine.R
-import com.tecnoscimmia.nine.model.MatchResult
+import com.tecnoscimmia.nine.controller.MenuController
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
 import com.tecnoscimmia.nine.ui.theme.NineColors
 import com.tecnoscimmia.nine.ui.theme.NineIconStyle
 import com.tecnoscimmia.nine.ui.theme.NineTextStyle
+import com.tecnoscimmia.nine.model.MatchResult
 
 /*
  * This file contains the definitions for all the widgets that can be used in both portrait and landscape mode
@@ -70,13 +74,13 @@ fun ButtonWithIcon(btnModifier: Modifier = NineButtonStyle.defaultModifier, onCl
 		border = BorderStroke(width = NineButtonStyle.borderWidth, color = if(btnShowBorder) btnBorderColor else btnBorderColor.copy(alpha = 0f))
 	)
 	{
-		Icon(modifier = iconModifier, painter = painterResource(id = iconId), contentDescription = null, tint = iconColor)
+			Icon(modifier = iconModifier, painter = painterResource(id = iconId), contentDescription = null, tint = iconColor)
 	}
 }
 
 
-// A simple button with an arrow icon positioned at the bottom left, it's used to go back to the previous screen, of the onClick
-// callback is given then it's executed after the screen has changed
+// A simple button positioned in the bottom left with an arrow icon on top, it's used to go back to the previous screen.
+// If the onClick callback is given then it's executed after the screen has changed
 @Composable
 fun GoBackButton(navigationCntrl: NavHostController, onClick: ( () -> Unit)? = null)
 {
@@ -93,35 +97,32 @@ fun GoBackButton(navigationCntrl: NavHostController, onClick: ( () -> Unit)? = n
 
 	Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Bottom)
 	{
-		ButtonWithIcon(onClick = onClickBackBtn, iconId = NineIconStyle.leftArrow_round, btnShape = RoundedCornerShape(topEnd = NineButtonStyle.cornerRadius))
+		ButtonWithIcon(onClick = onClickBackBtn, iconId = NineIconStyle.leftArrowRound, btnShape = RoundedCornerShape(topEnd = NineButtonStyle.cornerRadius))
 	}
 }
 
 
 // A row with 2 buttons used to change the game mode and some text that displays the game mode currently selected
 @Composable
-fun GameModeSelector(availableModes: List<String>, currMode: Int = 0)
+fun GameModeSelector(cntrl: MenuController)
 {
-	val currGameMode = remember { mutableStateOf(currMode) }
+	val currGameMode = remember { cntrl.settings.gameMode }
 
 	Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
 	{
 		// Left arrow
-		ButtonWithIcon(onClick = { /*TODO*/ },
+		ButtonWithIcon(onClick = cntrl::setGameModeToPrev,
 			btnModifier = Modifier.size(width = NineButtonStyle.longWidth, height = NineButtonStyle.longHeight),
-			iconId = NineIconStyle.leftArrow_round, btnShowBorder = false, btnShowBackground = false
+			iconId = NineIconStyle.leftArrowRound, btnShowBorder = false, btnShowBackground = false
 		)
 
 		// Current game mode selected
-		Text(text = if(currMode in availableModes.indices) availableModes[currGameMode.value] else "",
-			fontWeight = NineTextStyle.subTitle.fontWeight,
-			fontSize = NineTextStyle.subTitle.fontSize
-		)
+		Text(text = cntrl.getSelectedGameMode(), fontWeight = NineTextStyle.subTitle.fontWeight, fontSize = NineTextStyle.subTitle.fontSize)
 
 		// Right arrow
-		ButtonWithIcon(onClick = { /*TODO*/ },
+		ButtonWithIcon(onClick = cntrl::setGameModeToNext, btnShowBorder = false, btnShowBackground = false,
 			btnModifier = Modifier.size(width = NineButtonStyle.longWidth, height = NineButtonStyle.longHeight),
-			iconId = NineIconStyle.rightArrow_round, btnShowBorder = false, btnShowBackground = false)
+			iconId = NineIconStyle.rightArrowRound)
 	}
 }
 
@@ -157,10 +158,8 @@ fun GameStarter(width: Float, height: Float, onSwipe: () -> Unit, swipeThreshold
 				onDragEnd = {                                            // Executed when the drag is over
 					if (currSwipeAmount.value < swipeThreshold)          // If the swipe made by the user is "long enough"
 					{
-						//onSwipe()										// Then call the callback function
-						Toast
-							.makeText(c, "currSwipeAmount >= maxSwipeAmount", Toast.LENGTH_SHORT)
-							.show()
+						onSwipe()										// Then call the callback function
+						Toast.makeText(c, "currSwipeAmount >= maxSwipeAmount", Toast.LENGTH_SHORT).show()
 					}
 
 					currScale.value = 1f                                // Reset all values
@@ -173,8 +172,7 @@ fun GameStarter(width: Float, height: Float, onSwipe: () -> Unit, swipeThreshold
 	{
 		Box(modifier = modifier, contentAlignment = Alignment.Center)
 		{
-			Icon(modifier = Modifier
-				.scale(scaleX = 1f, scaleY = currScale.value)
+			Icon(modifier = Modifier.scale(scaleX = 1f, scaleY = currScale.value)
 				.size(width = NineIconStyle.longWidth, height = NineIconStyle.normalHeight),
 					painter = painterResource(NineIconStyle.hourglass), contentDescription = null)
 		}
@@ -185,7 +183,8 @@ fun GameStarter(width: Float, height: Float, onSwipe: () -> Unit, swipeThreshold
 }
 
 
-// A lazy column used to display some data about matches played in the past, it's used in the scoreboard screen
+// A lazy column used to display data about matches played in the past, it's used in the scoreboard screen,
+// note that this function does not sort the list in any way!
 @Composable
 fun Scoreboard(data: List<MatchResult>, widthOccupation: Float, heightOccupation: Float)
 {
@@ -196,22 +195,22 @@ fun Scoreboard(data: List<MatchResult>, widthOccupation: Float, heightOccupation
 			horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
 		{
 			// Rank column header
-			Text(text = stringResource(R.string.rank_column_header), modifier = Modifier.weight(0.5f),
+			Text(text = stringResource(R.string.scoreboard_rank_column_header), modifier = Modifier.weight(0.5f),
 				fontWeight = NineTextStyle.subTitle.fontWeight, fontFamily = NineTextStyle.subTitle.fontFamily,
 				fontSize = NineTextStyle.subTitle.fontSize, textAlign = TextAlign.Center)
 
 			// Time column header
-			Text(text = stringResource(R.string.time_column_header), modifier = Modifier.weight(0.5f),
+			Text(text = stringResource(R.string.scoreboard_time_column_header), modifier = Modifier.weight(0.5f),
 				fontWeight = NineTextStyle.subTitle.fontWeight, fontFamily = NineTextStyle.subTitle.fontFamily,
 				fontSize = NineTextStyle.subTitle.fontSize, textAlign = TextAlign.Center)
 
 			// Date column header
-			Text(text = stringResource(R.string.date_column_header), modifier = Modifier.weight(0.5f),
+			Text(text = stringResource(R.string.scoreboard_date_column_header), modifier = Modifier.weight(0.5f),
 				fontWeight = NineTextStyle.subTitle.fontWeight, fontFamily = NineTextStyle.subTitle.fontFamily,
 				fontSize = NineTextStyle.subTitle.fontSize, textAlign = TextAlign.Center)
 
 			// Game mode column header
-			Text(text = stringResource(R.string.game_mode_column_header), modifier = Modifier.weight(0.5f),
+			Text(text = stringResource(R.string.scoreboard_game_mode_column_header), modifier = Modifier.weight(0.5f),
 				fontWeight = NineTextStyle.subTitle.fontWeight, fontFamily = NineTextStyle.subTitle.fontFamily,
 				fontSize = NineTextStyle.subTitle.fontSize, textAlign = TextAlign.Center)
 		}
@@ -227,7 +226,7 @@ fun Scoreboard(data: List<MatchResult>, widthOccupation: Float, heightOccupation
 }
 
 
-// A row that contains data about a match played, it's used in the scoreboard widget
+// A row that contains data about a match played in the past, it's used in the scoreboard widget
 @Composable
 fun ScoreboardEntry(rank: Int, time: String, date: String, gameMode: String)
 {
@@ -236,8 +235,7 @@ fun ScoreboardEntry(rank: Int, time: String, date: String, gameMode: String)
 		Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp),
 			horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
 		{
-			// If rank is in top 3 then draw the trophy icon
-			if(rank in 1..3)
+			if(rank in 1..3)								// If rank is in top 3 then draw the trophy icon
 			{
 				Icon(painterResource(id = NineIconStyle.trophy), contentDescription = null,
 					modifier = Modifier.size(width = NineIconStyle.shortWidth, height = NineIconStyle.shortHeight).weight(0.5f),
@@ -249,13 +247,13 @@ fun ScoreboardEntry(rank: Int, time: String, date: String, gameMode: String)
 						else -> Color.Black
 					}
 				)
-			} else {	// Otherwise just the text
+			} else {										// Otherwise just the text
 				Text(text = rank.toString(), modifier = Modifier.weight(0.5f),
 					fontWeight = NineTextStyle.subTitle.fontWeight, fontFamily = NineTextStyle.simple.fontFamily,
 					fontSize = NineTextStyle.simple.fontSize, textAlign = TextAlign.Center)
 			}
 
-			// Time
+			// Duration
 			Text(text = time, modifier = Modifier.weight(0.5f), fontWeight = NineTextStyle.simple.fontWeight,
 				fontFamily = NineTextStyle.simple.fontFamily, fontSize = NineTextStyle.simple.fontSize, textAlign = TextAlign.Center)
 
@@ -266,6 +264,55 @@ fun ScoreboardEntry(rank: Int, time: String, date: String, gameMode: String)
 			// Game mode
 			Text(text = gameMode, modifier = Modifier.weight(0.5f), fontWeight = NineTextStyle.simple.fontWeight,
 				fontFamily = NineTextStyle.simple.fontFamily, fontSize = NineTextStyle.simple.fontSize, textAlign = TextAlign.Center)
+		}
+	}
+}
+
+
+// TODO: I'm rewriting the SettingRow function, the old one is above and is a mess...
+@Composable
+fun SettingRow(settingName: String, availableValues: Array<String>, currentValue: String, onSettingChange: (newValue: String) -> Unit)
+{
+	val isMenuExpanded = remember { mutableStateOf(false)}
+	val settingValue = remember { mutableStateOf(currentValue) }
+
+	Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
+		horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
+	{
+		// Name of the setting
+		Text(text = settingName, modifier = Modifier.weight(0.5f), textAlign = TextAlign.Center,
+			fontWeight = NineTextStyle.subTitle.fontWeight, fontSize = NineTextStyle.subTitle.fontSize,
+			fontFamily = NineTextStyle.subTitle.fontFamily)
+
+		// Button that enables the drop down menu so the user can choose another value for the setting
+		Button(modifier = Modifier.weight(0.5f), onClick = { isMenuExpanded.value = true },
+				shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+		{
+			Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
+			{
+				// Display the current value assigned to the setting
+				Text(text = settingValue.value, textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
+					fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
+
+				// This icon signals to user that clicking on this button will enable a drop down menu
+				Icon(painter = painterResource(NineIconStyle.downArrowRound), contentDescription = null)
+
+			}
+
+			// The drop down menu that shows all the available values for this setting
+			DropdownMenu(expanded = isMenuExpanded.value, onDismissRequest = { isMenuExpanded.value = false} )
+			{
+				availableValues.forEach { value ->			// For each available value create an item in the drop down menu
+					DropdownMenuItem(text = { Text(text = value) },
+						onClick = {
+							settingValue.value = value		// Change text on the button
+							isMenuExpanded.value = false	// Close the drop down menu
+							onSettingChange(value)			// Call the given callback with the selected setting
+						}
+					)
+				}
+			}
+
 		}
 	}
 }

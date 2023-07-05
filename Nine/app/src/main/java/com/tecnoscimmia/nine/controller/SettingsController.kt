@@ -1,14 +1,22 @@
 package com.tecnoscimmia.nine.controller
 
 import androidx.navigation.NavHostController
+import com.tecnoscimmia.nine.R
+import com.tecnoscimmia.nine.model.GameSettings
 
 /*
- * This file defines the GameController class, this class defines the app behaviour in the settings screen
- */
+* This file defines the controller for the settings screen
+*/
 
-class SettingsController(navCntrl: NavHostController)
+class SettingsController(val navigationCntrl: NavHostController, val settings: GameSettings)
 {
-	var navigationCntrl = navCntrl
 
-	// TODO: Add implementation
+	fun setLanguage(newLanguage: String)
+	{}
+
+	fun setTheme(newTheme: String)
+	{}
+
+	fun setKeyboardLayout(newLayout: String)
+	{}
 }

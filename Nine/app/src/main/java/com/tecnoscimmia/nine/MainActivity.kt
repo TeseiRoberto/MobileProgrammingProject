@@ -14,11 +14,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.tecnoscimmia.nine.controller.GameController
-import com.tecnoscimmia.nine.controller.MainController
+import com.tecnoscimmia.nine.controller.MenuController
 import com.tecnoscimmia.nine.controller.ScoreboardController
 import com.tecnoscimmia.nine.controller.SettingsController
+import com.tecnoscimmia.nine.model.GameSettings
 import com.tecnoscimmia.nine.ui.theme.NineTheme
-import com.tecnoscimmia.nine.view.GameScreen
 import com.tecnoscimmia.nine.view.MenuScreen
 import com.tecnoscimmia.nine.view.NineScreen
 import com.tecnoscimmia.nine.view.ScoreboardScreen
@@ -29,43 +29,14 @@ import com.tecnoscimmia.nine.view.SettingsScreen
 @Composable
 fun Test() // TODO: Remove this preview function
 {
-	val mainCntrl = MainController(rememberNavController())
+	val activity = MainActivity()
+	//val GameSettings = GameSettings.getInstance(this)
+	val menuCntrl = SettingsController(navigationCntrl = rememberNavController(), settings = GameSettings.getInstance(cntxt = activity))
 
-	NineTheme {
-		val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-		mainCntrl.navigationCntrl = rememberNavController()
-
-		// Set navigation host so that we can navigate between the different screens of the app
-		NavHost(navController = mainCntrl.navigationCntrl, startDestination = NineScreen.MainMenu.name)
-		{
-			composable(NineScreen.MainMenu.name)
-			{
-				MenuScreen(cntrl = mainCntrl, isLandscape = isLandscape)
-			}
-
-			composable(NineScreen.Scoreboard.name)
-			{
-				val scoreboardCntrl = ScoreboardController(mainCntrl.navigationCntrl)
-				ScoreboardScreen(cntrl = scoreboardCntrl, isLandscape = isLandscape)
-			}
-
-			composable(NineScreen.Settings.name)
-			{
-				val settingsCntrl = SettingsController(mainCntrl.navigationCntrl)
-				SettingsScreen(cntrl = settingsCntrl, isLandscape = isLandscape)
-			}
-
-			composable(NineScreen.Game.name)
-			{
-				val gameCntrl = GameController(mainCntrl.navigationCntrl)
-				GameScreen(cntrl = gameCntrl, isLandscape = isLandscape)
-			}
-		}
-
-		//Surface(modifier = Modifier.fillMaxSize(), content = { MenuScreen(cntrl = mainCntrl, isLandscape = isLandscape) } )
-
-		val scoreboardCntrl = ScoreboardController(mainCntrl.navigationCntrl)
-		Surface(modifier = Modifier.fillMaxSize(), content = { ScoreboardScreen(cntrl = scoreboardCntrl, isLandscape = isLandscape) } )
+	NineTheme()
+	{
+		//Surface(modifier = Modifier.fillMaxSize(), content = { MenuScreen(cntrl = menuCntrl, isLandscape = false) } )
+		Surface(modifier = Modifier.fillMaxSize(), content = { SettingsScreen(cntrl = menuCntrl, isLandscape = false) } )
 	}
 }
 
@@ -82,7 +53,6 @@ fun Test() // TODO: Remove this preview function
  *
  */
 
-
 class MainActivity : ComponentActivity()
 {
 
@@ -91,37 +61,39 @@ class MainActivity : ComponentActivity()
 		super.onCreate(savedInstanceState)
 
 		setContent {
-			val mainCntrl = MainController(rememberNavController())		// Instantiate main controller
+			val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-			NineTheme {
+			// Instantiate the menu controller
+			val menuCntrl = MenuController(navigationCntrl = rememberNavController(), settings = GameSettings.getInstance(this))
 
-				val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-
-				// Set navigation host so that we can navigate between the different screens of the app
-				NavHost(navController = mainCntrl.navigationCntrl, startDestination = NineScreen.MainMenu.name)
+			NineTheme()
+			{
+				// Set navigation host for the navigation controller so that we can navigate between
+				// the different screens of the app (we are actually building the navigation graph)
+				NavHost(navController = menuCntrl.navigationCntrl, startDestination = NineScreen.MainMenu.name)
 				{
 					composable(NineScreen.MainMenu.name)
 					{
-						MenuScreen(cntrl = mainCntrl, isLandscape = isLandscape)
+						MenuScreen(cntrl = menuCntrl, isLandscape = isLandscape)
 					}
 
 					composable(NineScreen.Scoreboard.name)
 					{
-						val scoreboardCntrl = ScoreboardController(mainCntrl.navigationCntrl)
+						val scoreboardCntrl = ScoreboardController(menuCntrl.navigationCntrl)
 						ScoreboardScreen(cntrl = scoreboardCntrl, isLandscape = isLandscape)
 					}
 
 					composable(NineScreen.Settings.name)
 					{
-						val settingsCntrl = SettingsController(mainCntrl.navigationCntrl)
+						val settingsCntrl = SettingsController(menuCntrl.navigationCntrl, settings = menuCntrl.settings)
 						SettingsScreen(cntrl = settingsCntrl, isLandscape = isLandscape)
 					}
 
-					composable(NineScreen.Game.name)
+					/*composable(NineScreen.Game.name)
 					{
 						val gameCntrl = GameController(mainCntrl.navigationCntrl)
 						GameScreen(cntrl = gameCntrl, isLandscape = isLandscape)
-					}
+					}*/
 				}
 			}
 		}

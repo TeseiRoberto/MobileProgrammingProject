@@ -51,8 +51,9 @@ class NineIconStyle
 		val appIcon				= R.drawable.app_icon
 		val leftArrow 			= R.drawable.left_arrow
 		val rightArrow			= R.drawable.right_arrow
-		val leftArrow_round		= R.drawable.left_arrow_rounded
-		val rightArrow_round	= R.drawable.right_arrow_rounded
+		val leftArrowRound		= R.drawable.left_arrow_rounded
+		val rightArrowRound		= R.drawable.right_arrow_rounded
+		val downArrowRound		= R.drawable.down_arrow_rounded
 		val settings			= R.drawable.settings
 		val done				= R.drawable.done
 		val hourglass			= R.drawable.hourglass
