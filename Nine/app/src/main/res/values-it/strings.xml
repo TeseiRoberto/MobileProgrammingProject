@@ -1,0 +1,39 @@
+<resources>
+
+    <string name="app_name">Nine</string>
+
+    <!-- Strings used in the menu screen-->
+    <string name="menu_message_to_play">Scorri per giocare!</string>
+
+
+    <!-- Strings used in the scoreboard screen-->
+    <string name="scoreboard_screen_title">Classifica</string>
+    <string name="scoreboard_rank_column_header">Rank</string>
+    <string name="scoreboard_time_column_header">Tempo</string>
+    <string name="scoreboard_date_column_header">Data</string>
+    <string name="scoreboard_game_mode_column_header">Modalità</string>
+    <string name="scoreboard_message_is_empty">Non è ancora stata giocata alcuna partita!</string>
+
+
+    <!-- Strings used in the settings screen -->
+    <string name="settings_screen_title">Impostazioni</string>
+    <string name="settings_message_start_tutorial">Impara a giocare</string>
+    <string name="settings_message_apply_changes">Applica modifiche</string>
+
+    <string name="settings_theme">Tema</string>
+    <string name="settings_keyboard_layout">Layout tastiera</string>
+
+
+    <!-- Available values for the settings of the application -->
+    <string name="settings_theme_light">Chiaro</string>
+    <string name="settings_theme_dark">Scuro</string>
+
+    <string name="settings_keyboard_layout_3x3">3x3</string>
+    <string name="settings_keyboard_layout_in_line">In linea</string>
+
+    <string-array name="settings_game_mode_values">
+        <item>libera</item>
+        <item>sfida</item>
+    </string-array>
+
+</resources>

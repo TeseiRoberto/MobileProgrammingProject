@@ -1,7 +1,6 @@
 package com.tecnoscimmia.nine.model
 
 import android.content.Context
-import androidx.compose.runtime.mutableStateOf
 import com.tecnoscimmia.nine.MainActivity
 import com.tecnoscimmia.nine.R
 
@@ -10,109 +9,107 @@ import com.tecnoscimmia.nine.R
  */
 
 
-// This class holds the current game settings and defines all the available values for each game setting.
-// The values that a game setting can assume are represented as strings and all the available values are
-// defined in an array in the strings.xml file.
-class GameSettings private constructor()
+// This class holds the current game settings, is responsible for loading and saving game settings in the preferences file
+class GameSettings private constructor(val activity: MainActivity)
 {
-	// Current settings values
-	var language					= mutableStateOf("")
-	var theme						= mutableStateOf("")
-	var keyboardLayout				= mutableStateOf("")
-	var gameMode 					= mutableStateOf("")
+	// Current values of the settings
+	private var theme: 					String = ""
+	private var keyboardLayout: 		String = ""
+	private var showTutorial: 			Boolean = false
+
+	// Getter methods
+	fun getTheme() : 					String { return theme }
+	fun getKeyboardLayout() : 			String { return keyboardLayout }
+	fun needToShowTutorial():			Boolean { return showTutorial }
+
+	// TODO: Maybe I need to move this somewhere else...
+	fun getAvailableGameModes() : 		Array<String>	{ return availableGameModes!! }
 
 
-	// Returns an array of strings that specify all the languages supported by the application
-	fun getAvailableLanguages() : Array <String>
+	// Changes the theme and save the new one in the preferences file
+	fun setTheme(newTheme: String)
 	{
-		return availableLanguages!!								// This array is initialized in getInstance so it should be safe to return it
+		theme = newTheme
+		val res = activity.resources
+		val preferencesFile = activity.getPreferences(Context.MODE_PRIVATE)
+
+		preferencesFile.edit().putString(res.getString(R.string.settings_theme_key), newTheme).apply()
 	}
 
 
-	// Returns an array of strings that specify all the themes supported by the application
-	fun getAvailableThemes() : Array <String>
+	// Changes the keyboard layout and save the new one in the preferences file
+	fun setKeyboardLayout(newKeyboardLayout: String)
 	{
-		return availableThemes!!								// This array is initialized in getInstance so it should be safe to return it
+		keyboardLayout = newKeyboardLayout
+		val res = activity.resources
+		val preferencesFile = activity.getPreferences(Context.MODE_PRIVATE)
+
+		preferencesFile.edit().putString(res.getString(R.string.settings_keyboard_layout_key), newKeyboardLayout).apply()
 	}
 
 
-	// Returns an array of strings that specify all the keyboard layouts supported by the application
-	fun getAvailableKeyboardLayouts() : Array <String>
+	// Loads values for the settings from the preferences file
+	private fun loadFromPreferencesFile()
 	{
-		return availableKeyboardLayouts!!						// This array is initialized in getInstance so it should be safe to return it
-	}
+		val res = activity.resources
+		val preferencesFile = activity.getPreferences(Context.MODE_PRIVATE)
 
+		// Check if settings values are present in the preferences file
+		if(preferencesFile.contains(res.getString(R.string.settings_theme_key)))
+		{
+			// If they are present then we load them
+			theme 			= preferencesFile.getString(res.getString(R.string.settings_theme_key), LIGHT_THEME) as String
+			keyboardLayout 	= preferencesFile.getString(res.getString(R.string.settings_keyboard_layout_key), KBD_LAYOUT_3X3) as String
+			showTutorial 	= preferencesFile.getBoolean(res.getString(R.string.settings_show_tutorial_key), false)
 
-	// Returns an array of strings that specify all the game modes supported by the application
-	fun getAvailableGameModes() : Array <String>
-	{
-		return availableGameModes!!								// This array is initialized in getInstance so it should be safe to return it
+		} else {
+			// Otherwise we set default values and we save those in the preferences file
+			theme 			= LIGHT_THEME
+			keyboardLayout 	= KBD_LAYOUT_3X3
+			showTutorial 	= true
+
+			val edit = preferencesFile.edit()
+			edit.putString(res.getString(R.string.settings_theme_key), theme)
+			edit.putString(res.getString(R.string.settings_keyboard_layout_key), keyboardLayout)
+
+			// Here we save false because we will display the tutorial "right now" (during this session of the application) and the next time it will not be needed
+			edit.putBoolean(res.getString(R.string.settings_show_tutorial_key), false)
+			edit.apply()
+		}
 	}
 
 	companion object
 	{
-		fun getInstance(cntxt: MainActivity) : GameSettings
+		private var instance: 	GameSettings? = null				// The singleton instance
+
+		// Values for the theme setting (internal representation)
+		val LIGHT_THEME: 		String = "LIGHT_THEME"
+		val DARK_THEME: 		String = "DARK_THEME"
+
+		// Values for the keyboard layout setting (internal representation)
+		val KBD_LAYOUT_3X3:		String = "3X3"
+		val KBD_LAYOUT_IN_LINE: String = "IN_LINE"
+
+		// TODO: Maybe I need to move this somewhere else...
+		private var availableGameModes: 		Array<String>? = null
+
+
+		fun getInstance(activity: MainActivity) : GameSettings
 		{
-			if(instance != null)								// If instance is already initialized just return it
+			if(instance != null)
 				return instance!!
 
-			instance = GameSettings()							// Otherwise, create the instance
+			instance = GameSettings(activity)
 
-			// Load all available values for each setting
-			availableLanguages 			= cntxt.resources.getStringArray(R.array.setting_language_values)
-			availableThemes 			= cntxt.resources.getStringArray(R.array.setting_theme_values)
-			availableKeyboardLayouts 	= cntxt.resources.getStringArray(R.array.setting_keyboard_layout_values)
-			availableGameModes 			= cntxt.resources.getStringArray(R.array.setting_game_mode_values)
+			// Load the available game modes from the resource file TODO: Maybe I need to move this somewhere else...
+			availableGameModes = activity.resources.getStringArray(R.array.settings_game_mode_values)
 
-			// Load settings value from preferences file
-			loadFromFile(cntxt)
+			// Load user preferences from the preferences file
+			instance!!.loadFromPreferencesFile()
 
-			instance!!.gameMode.value = availableGameModes!![0]	// Set starting game mode
 			return instance!!
 		}
-
-
-		// Loads game settings from the default preferences file of the application, this function MUST
-		// be called after all the available settings arrays have been initialized because if settings values are
-		// not present in the preferences file then the available values are used to set default values for settings;
-		private fun loadFromFile(cntxt: MainActivity)
-		{
-			if(instance == null)								// This function must be called only when the instance has already been initialized
-				return
-
-			val preferences = cntxt.getPreferences(Context.MODE_PRIVATE)
-
-			// Check if settings are saved in the preferences file, if they are then we load them
-			if(preferences.contains(cntxt.getString(R.string.setting_language)) == true)
-			{
-				instance!!.language.value 		= preferences.getString(cntxt.getString(R.string.setting_language), "")!!
-				instance!!.theme.value 			= preferences.getString(cntxt.getString(R.string.setting_theme), "")!!
-				instance!!.keyboardLayout.value = preferences.getString(cntxt.getString(R.string.setting_keyboard_layout), "")!!
-
-			} else {	// Otherwise we need to store default values in the file and set current values to default too
-				instance!!.language.value 		= availableLanguages!![0]
-				instance!!.theme.value 			= availableThemes!![0]
-				instance!!.keyboardLayout.value = availableKeyboardLayouts!![0]
-
-				preferences.edit().putString(cntxt.getString(R.string.setting_language), instance!!.language.value).apply()
-				preferences.edit().putString(cntxt.getString(R.string.setting_theme), instance!!.theme.value).apply()
-				preferences.edit().putString(cntxt.getString(R.string.setting_keyboard_layout), instance!!.keyboardLayout.value).apply()
-			}
-		}
-
-
-		private var instance: GameSettings? 	= null
-
-		// Arrays of available values for each setting
-		private var availableLanguages: 		Array<String>? = null
-		private var availableThemes:			Array<String>? = null
-		private var availableKeyboardLayouts:	Array<String>? = null
-		private var availableGameModes:			Array<String>? = null
 	}
-
 }
 
 
-// TODO: Assign correct data types to this class
-// This class holds data about a match played in the past, is used by scoreboard controller and scoreboard screen
-data class MatchResult(val time: String, val date: String, val gameMode: String)

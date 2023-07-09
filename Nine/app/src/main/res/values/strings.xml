@@ -1,10 +1,9 @@
 <resources>
 
     <string name="app_name">Nine</string>
-    <string name="settings_filename">NineSettings</string>
 
     <!-- Strings used in the enu screen-->
-    <string name="to_play_message">Swipe to play!</string>
+    <string name="menu_message_to_play">Swipe to play!</string>
 
 
     <!-- Strings used in the scoreboard screen-->
@@ -13,40 +12,33 @@
     <string name="scoreboard_time_column_header">Time</string>
     <string name="scoreboard_date_column_header">Date</string>
     <string name="scoreboard_game_mode_column_header">Game mode</string>
+    <string name="scoreboard_message_is_empty">No match has been played yet!</string>
 
 
     <!-- Strings used in the settings screen -->
     <string name="settings_screen_title">Settings</string>
+    <string name="settings_message_start_tutorial">Learn to play</string>
+    <string name="settings_message_apply_changes">Apply changes</string>
 
-    <string name="setting_language">Language</string>
-    <string name="setting_theme">Theme</string>
-    <string name="setting_keyboard_layout">Keyboard layout</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_keyboard_layout">Keyboard layout</string>
 
-    * <!-- Available values for the settings of the application-->
-    <string-array name="setting_language_values">
-        <item>English</item>
-        <item>Italian</item>
+    <!-- Available values for the settings of the application -->
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+
+    <string name="settings_keyboard_layout_3x3">3x3</string>
+    <string name="settings_keyboard_layout_in_line">In line</string>
+
+    <string-array name="settings_game_mode_values">
+        <item>free</item>
+        <item>challenge</item>
     </string-array>
 
-    <string-array name="setting_language_iso_code">
-        <item  name= "english">en</item>
-        <item name= "italian">it</item>
-    </string-array>
 
-    <string-array name="setting_theme_values">
-        <item name= "light">Light</item>
-        <item name= "dark">Dark</item>
-    </string-array>
-
-    <string-array name="setting_keyboard_layout_values">
-        <item name= "3x3">3x3</item>
-        <item name= "inLine">in line</item>
-    </string-array>
-
-    <string-array name="setting_game_mode_values">
-        <item name= "free">free</item>
-        <item name= "challenge">challenge</item>
-    </string-array>
-
+    <!-- Strings used as keys in the preferences file -->
+    <string name="settings_theme_key" translatable="false">THEME</string>
+    <string name="settings_keyboard_layout_key" translatable="false">KBD_LAYOUT</string>
+    <string name="settings_show_tutorial_key" translatable="false">TUTORIAL</string>
 
 </resources>

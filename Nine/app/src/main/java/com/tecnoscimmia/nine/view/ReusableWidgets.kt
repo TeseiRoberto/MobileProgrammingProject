@@ -23,7 +23,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -40,7 +39,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.tecnoscimmia.nine.R
-import com.tecnoscimmia.nine.controller.MenuController
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
 import com.tecnoscimmia.nine.ui.theme.NineColors
 import com.tecnoscimmia.nine.ui.theme.NineIconStyle
@@ -102,25 +100,35 @@ fun GoBackButton(navigationCntrl: NavHostController, onClick: ( () -> Unit)? = n
 }
 
 
+// A simple icon that indicates to the user that something is loading in background
+@Composable
+fun LoadingIcon()
+{
+	Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center)
+	{
+		Text(text = "LOADING DATA") // TODO: Replace this text with an animated icon
+	}
+
+}
+
+
 // A row with 2 buttons used to change the game mode and some text that displays the game mode currently selected
 @Composable
-fun GameModeSelector(cntrl: MenuController)
+fun GameModeSelector(currGameMode: String, onLeftArrowClick: () -> Unit, onRightArrowClick: () -> Unit)
 {
-	val currGameMode = remember { cntrl.settings.gameMode }
-
 	Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
 	{
 		// Left arrow
-		ButtonWithIcon(onClick = cntrl::setGameModeToPrev,
+		ButtonWithIcon(onClick = onLeftArrowClick,
 			btnModifier = Modifier.size(width = NineButtonStyle.longWidth, height = NineButtonStyle.longHeight),
 			iconId = NineIconStyle.leftArrowRound, btnShowBorder = false, btnShowBackground = false
 		)
 
 		// Current game mode selected
-		Text(text = cntrl.getSelectedGameMode(), fontWeight = NineTextStyle.subTitle.fontWeight, fontSize = NineTextStyle.subTitle.fontSize)
+		Text(text = currGameMode, fontWeight = NineTextStyle.subTitle.fontWeight, fontSize = NineTextStyle.subTitle.fontSize)
 
 		// Right arrow
-		ButtonWithIcon(onClick = cntrl::setGameModeToNext, btnShowBorder = false, btnShowBackground = false,
+		ButtonWithIcon(onClick = onRightArrowClick, btnShowBorder = false, btnShowBackground = false,
 			btnModifier = Modifier.size(width = NineButtonStyle.longWidth, height = NineButtonStyle.longHeight),
 			iconId = NineIconStyle.rightArrowRound)
 	}
@@ -158,7 +166,7 @@ fun GameStarter(width: Float, height: Float, onSwipe: () -> Unit, swipeThreshold
 				onDragEnd = {                                            // Executed when the drag is over
 					if (currSwipeAmount.value < swipeThreshold)          // If the swipe made by the user is "long enough"
 					{
-						onSwipe()										// Then call the callback function
+						onSwipe()                                        // Then call the callback function
 						Toast.makeText(c, "currSwipeAmount >= maxSwipeAmount", Toast.LENGTH_SHORT).show()
 					}
 
@@ -177,7 +185,7 @@ fun GameStarter(width: Float, height: Float, onSwipe: () -> Unit, swipeThreshold
 					painter = painterResource(NineIconStyle.hourglass), contentDescription = null)
 		}
 
-		Text(text = stringResource(R.string.to_play_message), fontSize = NineTextStyle.subTitle.fontSize,
+		Text(text = stringResource(R.string.menu_message_to_play), fontSize = NineTextStyle.subTitle.fontSize,
 			fontWeight = NineTextStyle.subTitle.fontWeight, fontFamily = NineTextStyle.subTitle.fontFamily)
 	}
 }
@@ -215,12 +223,18 @@ fun Scoreboard(data: List<MatchResult>, widthOccupation: Float, heightOccupation
 				fontSize = NineTextStyle.subTitle.fontSize, textAlign = TextAlign.Center)
 		}
 
-		LazyColumn(modifier = Modifier.fillMaxWidth())
+		if(data.isEmpty() == true)
 		{
-			itemsIndexed(data)
-			{ index, match ->
-				ScoreboardEntry(rank = index + 1, time = match.time, date = match.date, gameMode = match.gameMode)
-			}
+			Text(text = stringResource(id = R.string.scoreboard_message_is_empty), fontWeight = NineTextStyle.subTitle.fontWeight,
+					fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
+		} else {
+			LazyColumn(modifier = Modifier.fillMaxWidth())
+			{
+				itemsIndexed(data)
+				{ index, match ->
+					ScoreboardEntry(rank = index + 1, time = match.time, date = match.date, gameMode = match.gameMode)
+				}
+			}	
 		}
 	}
 }
@@ -238,7 +252,9 @@ fun ScoreboardEntry(rank: Int, time: String, date: String, gameMode: String)
 			if(rank in 1..3)								// If rank is in top 3 then draw the trophy icon
 			{
 				Icon(painterResource(id = NineIconStyle.trophy), contentDescription = null,
-					modifier = Modifier.size(width = NineIconStyle.shortWidth, height = NineIconStyle.shortHeight).weight(0.5f),
+					modifier = Modifier
+						.size(width = NineIconStyle.shortWidth, height = NineIconStyle.shortHeight)
+						.weight(0.5f),
 					tint = when(rank)
 					{
 						1 -> NineColors.gold
@@ -271,10 +287,9 @@ fun ScoreboardEntry(rank: Int, time: String, date: String, gameMode: String)
 
 // TODO: I'm rewriting the SettingRow function, the old one is above and is a mess...
 @Composable
-fun SettingRow(settingName: String, availableValues: Array<String>, currentValue: String, onSettingChange: (newValue: String) -> Unit)
+fun SettingRow(settingName: String, availableValues: List<String>, currValue: String, onSettingChange: (newValue: String) -> Unit)
 {
-	val isMenuExpanded = remember { mutableStateOf(false)}
-	val settingValue = remember { mutableStateOf(currentValue) }
+	val isMenuExpanded = remember { mutableStateOf(false) }
 
 	Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
 		horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
@@ -291,7 +306,7 @@ fun SettingRow(settingName: String, availableValues: Array<String>, currentValue
 			Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
 			{
 				// Display the current value assigned to the setting
-				Text(text = settingValue.value, textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
+				Text(text = currValue, textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
 					fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
 
 				// This icon signals to user that clicking on this button will enable a drop down menu
@@ -305,7 +320,7 @@ fun SettingRow(settingName: String, availableValues: Array<String>, currentValue
 				availableValues.forEach { value ->			// For each available value create an item in the drop down menu
 					DropdownMenuItem(text = { Text(text = value) },
 						onClick = {
-							settingValue.value = value		// Change text on the button
+							//settingValue.value = value		// Change text on the button
 							isMenuExpanded.value = false	// Close the drop down menu
 							onSettingChange(value)			// Call the given callback with the selected setting
 						}
