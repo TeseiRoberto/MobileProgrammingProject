@@ -194,7 +194,7 @@ fun GameStarter(width: Float, height: Float, onSwipe: () -> Unit, swipeThreshold
 // A lazy column used to display data about matches played in the past, it's used in the scoreboard screen,
 // note that this function does not sort the list in any way!
 @Composable
-fun Scoreboard(data: List<MatchResult>, widthOccupation: Float, heightOccupation: Float)
+fun Scoreboard(data: List<MatchResult>?, widthOccupation: Float, heightOccupation: Float)
 {
 	Column(modifier = Modifier.fillMaxWidth(widthOccupation).fillMaxHeight(heightOccupation),
 		horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Top)
@@ -223,10 +223,10 @@ fun Scoreboard(data: List<MatchResult>, widthOccupation: Float, heightOccupation
 				fontSize = NineTextStyle.subTitle.fontSize, textAlign = TextAlign.Center)
 		}
 
-		if(data.isEmpty() == true)
+		if(data.isNullOrEmpty())
 		{
-			Text(text = stringResource(id = R.string.scoreboard_message_is_empty), fontWeight = NineTextStyle.subTitle.fontWeight,
-					fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
+			Text(text = stringResource(id = R.string.scoreboard_message_is_empty), modifier = Modifier.padding(vertical = 24.dp),
+				fontWeight = NineTextStyle.subTitle.fontWeight, fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
 		} else {
 			LazyColumn(modifier = Modifier.fillMaxWidth())
 			{
@@ -285,7 +285,6 @@ fun ScoreboardEntry(rank: Int, time: String, date: String, gameMode: String)
 }
 
 
-// TODO: I'm rewriting the SettingRow function, the old one is above and is a mess...
 @Composable
 fun SettingRow(settingName: String, availableValues: List<String>, currValue: String, onSettingChange: (newValue: String) -> Unit)
 {

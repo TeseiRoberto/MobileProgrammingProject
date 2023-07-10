@@ -15,6 +15,7 @@ import com.tecnoscimmia.nine.controller.ScoreboardController
 import com.tecnoscimmia.nine.controller.SettingsController
 import com.tecnoscimmia.nine.model.GameSettings
 import com.tecnoscimmia.nine.model.MatchResultDb
+import com.tecnoscimmia.nine.model.MatchResultRepository
 import com.tecnoscimmia.nine.ui.theme.NineTheme
 import com.tecnoscimmia.nine.view.MenuScreen
 import com.tecnoscimmia.nine.view.NineScreen
@@ -91,7 +92,7 @@ class MainActivity : ComponentActivity()
 
 					composable(NineScreen.Scoreboard.name)
 					{
-						val scoreboardCntrl = ScoreboardController(menuCntrl.navigationCntrl, db = db)
+						val scoreboardCntrl = ScoreboardController(menuCntrl.navigationCntrl, resultRepo = MatchResultRepository(db.matchResultDao()))
 						ScoreboardScreen(cntrl = scoreboardCntrl, isLandscape = isLandscape)
 					}
 

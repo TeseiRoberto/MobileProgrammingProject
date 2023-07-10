@@ -10,11 +10,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.tecnoscimmia.nine.R
@@ -22,6 +22,7 @@ import com.tecnoscimmia.nine.controller.MenuController
 import com.tecnoscimmia.nine.controller.ScoreboardController
 import com.tecnoscimmia.nine.controller.SettingsController
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
+import java.util.Calendar
 
 /*
  * This file contains the definitions of all the screens that the application is composed of
@@ -65,47 +66,20 @@ fun MenuScreen(cntrl: MenuController, isLandscape: Boolean)
 @Composable
 fun ScoreboardScreen(cntrl: ScoreboardController, isLandscape: Boolean)
 {
+	val scoreboardData = cntrl.getScoreboardData().observeAsState().value
+
 	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
 		ScreenTitle(title = stringResource(id = R.string.scoreboard_screen_title))
 
 		if(isLandscape)
-			Scoreboard(data = cntrl.loadScoreboardData(), widthOccupation = 0.8f, heightOccupation = 0.6f)
+			Scoreboard(data = scoreboardData, widthOccupation = 0.8f, heightOccupation = 0.6f)
 		else
-			Scoreboard(data = cntrl.loadScoreboardData(), widthOccupation = 1f, heightOccupation = 0.9f)
+			Scoreboard(data = scoreboardData, widthOccupation = 1f, heightOccupation = 0.9f)
 
 		GoBackButton(cntrl.navigationCntrl)
 	}
 }
-
-/* TODO: I need to make this work, currently the database is capable of storing data but we need a way to retrieve those data and display it...
-@Composable
-fun ScoreboardScreen(cntrl: ScoreboardController, isLandscape: Boolean)
-{
-	var isDataLoaded = remember { mutableStateOf(false) }		// This will become true when the scoreboard data will be ready to be displayed
-
-	Log.v("MAGIC_LOGGER", "Recomposing Scoreboard screen\nisDataLoaded = ${isDataLoaded.value}, scoreboardData = ${cntrl.scoreboardData}")
-
-	// Call the loadScoreboardData, this method is a coroutine that loads data from the db and executes the onCompletion callback
-	// when data are finally available
-	cntrl.loadScoreboardData(onCompletion = { isDataLoaded.value = true } )
-
-	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
-	{
-		ScreenTitle(title = stringResource(id = R.string.scoreboard_screen_title))
-
-		if(isDataLoaded.value == false)											// If the scoreboard data is not loaded yet
-		{
-			LoadingIcon()														// We display the loading icon
-		} else if(isDataLoaded.value == true && cntrl.scoreboardData != null)	// Otherwise we display the scoreboard with the loaded data (if the data is available)
-		{
-			if(isLandscape)
-				Scoreboard(data = cntrl.scoreboardData!!, widthOccupation = 0.8f, heightOccupation = 0.6f)
-			else
-				Scoreboard(data = cntrl.scoreboardData!!, widthOccupation = 1f, heightOccupation = 0.9f)
-		}
-	}
-}*/
 
 
 @Composable
