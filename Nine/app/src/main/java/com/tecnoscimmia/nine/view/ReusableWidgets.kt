@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.tecnoscimmia.nine.R
+import com.tecnoscimmia.nine.model.GameSettings
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
 import com.tecnoscimmia.nine.ui.theme.NineColors
 import com.tecnoscimmia.nine.ui.theme.NineIconStyle
@@ -346,8 +347,33 @@ fun SymbolButton(width: Dp, height: Dp, symbol: Char, backgroundColor: Color = C
 
 
 @Composable
-fun Keyboard(symbolSet: List<Char>)
+fun Keyboard(symbolSet: List<Char>, keyboardLayout: GameSettings.KeyboardLayoutSetting)
 {
+	// Build the keyboard according to the layout
+	/*when(keyboardLayout)
+	{
+		GameSettings.KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT ->
+		{
+			Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceEvenly)
+			{
+				Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
+				{
+
+				}
+
+				Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
+				{
+
+				}
+			}
+		}
+
+		GameSettings.KeyboardLayoutSetting.THREE_BY_THREE_KBD_LAYOUT ->
+		{
+
+		}
+	}*/
+
 	// This is the in-line layout
 	Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
 	{

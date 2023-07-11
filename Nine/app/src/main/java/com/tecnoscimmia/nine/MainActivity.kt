@@ -31,7 +31,7 @@ fun Test() // TODO: Remove this preview function
 {
 	val activity = MainActivity()
 	val gameSettings = GameSettings.getInstance(activity = activity)
-	val menuCntrl = MenuController(navigationCntrl = rememberNavController(), settings = gameSettings)
+	val menuCntrl = MenuController(navigationCntrl = rememberNavController(), settings = gameSettings, activity.applicationContext)
 
 	NineTheme()
 	{
@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity()
 			val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
 			// Instantiate the menu controller
-			val menuCntrl = MenuController(navigationCntrl = rememberNavController(), settings = GameSettings.getInstance(this))
+			val menuCntrl = MenuController(navigationCntrl = rememberNavController(), settings = GameSettings.getInstance(this), appCntxt = applicationContext)
 
 			NineTheme()
 			{
@@ -96,7 +96,7 @@ class MainActivity : ComponentActivity()
 					{
 						val settingsCntrl = SettingsController(navigationCntrl = menuCntrl.navigationCntrl,
 												settings = GameSettings.getInstance(this@MainActivity),
-												activity = this@MainActivity)
+												appCntxt = applicationContext)
 
 						SettingsScreen(cntrl = settingsCntrl, isLandscape = isLandscape)
 					}

@@ -10,29 +10,30 @@ import com.tecnoscimmia.nine.R
 
 
 // This class holds the current game settings, is responsible for loading and saving game settings in the preferences file.
-//(note that not all the game settings needs to be saved on file, the gameMode for example is not saved)
+//(Note that not all the game settings needs to be saved on file, for example the gameMode is not saved and neither is the showTutorial)
 class GameSettings private constructor(val activity: MainActivity)
 {
 	// Current values of the settings
-	private var theme: 					ThemeSetting = ThemeSetting.LIGHT_THEME
-	private var keyboardLayout: 		KeyboardLayoutSetting = KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT
-	private var gameMode:				GameModeSetting = GameModeSetting.TRAINING
-	private var showTutorial: 			Boolean = false
+	private var theme: 					ThemeSetting = ThemeSetting.LIGHT_THEME									// The current theme of the app
+	private var keyboardLayout: 		KeyboardLayoutSetting = KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT		// Layout used for the custom keyboard in the game screen
+	private var gameMode:				GameModeSetting = GameModeSetting.TRAINING_GAME_MODE					// Mode in which the game will be played
+	private var symbolSet:				SymbolsSetSetting = SymbolsSetSetting.NUMBERS_SYMBOLS_SET				// Set of symbols used in the game
+	private var showTutorial: 			Boolean = false															// Indicates if tutorial will be shown on app start up
 
 
 	// Those enums defines all the available values for each game setting
 	enum class ThemeSetting 			{ LIGHT_THEME, DARK_THEME }
 	enum class KeyboardLayoutSetting 	{ THREE_BY_THREE_KBD_LAYOUT, TWO_LINES_KBD_LAYOUT }
-	enum class GameModeSetting			{ TUTORIAL, TRAINING, CHALLENGE }
+	enum class GameModeSetting			{ TRAINING_GAME_MODE, CHALLENGE_GAME_MODE }
+	enum class SymbolsSetSetting		{ NUMBERS_SYMBOLS_SET, LETTERS_SYMBOLS_SET, EMOTICONS_SYMBOLS_SET }
 
 
 	// Getter methods
 	fun getTheme() : 					ThemeSetting 			{ return theme }
 	fun getKeyboardLayout() : 			KeyboardLayoutSetting 	{ return keyboardLayout }
+	fun getGameMode():					GameModeSetting			{ return gameMode }
+	fun getSymbolsSet():				SymbolsSetSetting		{ return symbolSet }
 	fun needToShowTutorial():			Boolean 				{ return showTutorial }
-
-	// TODO: Maybe I need to move this somewhere else...
-	fun getAvailableGameModes() : 		Array<String>			{ return availableGameModes!! }
 
 
 	// Changes the theme and save the new one in the preferences file
@@ -57,6 +58,24 @@ class GameSettings private constructor(val activity: MainActivity)
 	}
 
 
+	// Set the game mode type
+	fun setGameMode(newGameMode: GameModeSetting)
+	{
+		gameMode = newGameMode
+	}
+
+
+	// Set which set of symbols will be used in the game and save it to the preferences file
+	fun setSymbolsSet(newSymbolSet: SymbolsSetSetting)
+	{
+		symbolSet = newSymbolSet
+		val res = activity.resources
+		val preferencesFile = activity.getPreferences(Context.MODE_PRIVATE)
+
+		preferencesFile.edit().putString(res.getString(R.string.settings_symbols_set_key), newSymbolSet.name).apply()
+	}
+
+
 	// Loads values for the settings from the preferences file
 	private fun loadFromPreferencesFile()
 	{
@@ -67,26 +86,28 @@ class GameSettings private constructor(val activity: MainActivity)
 		if(preferencesFile.contains(res.getString(R.string.settings_theme_key)))
 		{
 			// If they are present then we load them (we load the string from file and convert it to the correct enum type)
-			theme = GameSettings.ThemeSetting.valueOf(
-				preferencesFile.getString(res.getString(R.string.settings_theme_key), GameSettings.ThemeSetting.LIGHT_THEME.name) as String)
+			theme = ThemeSetting.valueOf(
+				preferencesFile.getString(res.getString(R.string.settings_theme_key), ThemeSetting.LIGHT_THEME.name) as String )
 
-			keyboardLayout = GameSettings.KeyboardLayoutSetting.valueOf(
-				preferencesFile.getString(res.getString(R.string.settings_keyboard_layout_key), GameSettings.KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT.name) as String)
+			keyboardLayout = KeyboardLayoutSetting.valueOf(
+				preferencesFile.getString(res.getString(R.string.settings_keyboard_layout_key), KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT.name) as String )
 
-			showTutorial 	= preferencesFile.getBoolean(res.getString(R.string.settings_show_tutorial_key), false)
+			symbolSet = SymbolsSetSetting.valueOf(
+				preferencesFile.getString(res.getString(R.string.settings_symbols_set_key), SymbolsSetSetting.NUMBERS_SYMBOLS_SET.name) as String )
 
 		} else {
 			// Otherwise we set default values and we save those in the preferences file
-			theme 			= GameSettings.ThemeSetting.LIGHT_THEME
-			keyboardLayout 	= GameSettings.KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT
+			theme 			= ThemeSetting.LIGHT_THEME
+			keyboardLayout 	= KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT
+			symbolSet		= SymbolsSetSetting.NUMBERS_SYMBOLS_SET
+
+			// If settings were not saved then this may be the first time the app is started, so we need to show the tutorial
 			showTutorial 	= true
 
 			val edit = preferencesFile.edit()
 			edit.putString(res.getString(R.string.settings_theme_key), theme.name)
 			edit.putString(res.getString(R.string.settings_keyboard_layout_key), keyboardLayout.name)
-
-			// Here we save false because we will display the tutorial "right now" (during this session of the application) and the next time it will not be needed
-			edit.putBoolean(res.getString(R.string.settings_show_tutorial_key), false)
+			edit.putString(res.getString(R.string.settings_symbols_set_key), symbolSet.name)
 			edit.apply()
 		}
 	}
@@ -95,19 +116,12 @@ class GameSettings private constructor(val activity: MainActivity)
 	{
 		private var instance: 	GameSettings? = null				// The singleton instance
 
-		// TODO: Maybe I need to move this somewhere else...
-		private var availableGameModes: 		Array<String>? = null
-
-
 		fun getInstance(activity: MainActivity) : GameSettings
 		{
 			if(instance != null)
 				return instance!!
 
 			instance = GameSettings(activity)
-
-			// Load the available game modes from the resource file TODO: Maybe I need to move this somewhere else...
-			availableGameModes = activity.resources.getStringArray(R.array.settings_game_mode_values)
 
 			// Load user preferences from the preferences file
 			instance!!.loadFromPreferencesFile()

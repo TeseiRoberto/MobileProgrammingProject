@@ -22,18 +22,27 @@
 
     <string name="settings_theme">Tema</string>
     <string name="settings_keyboard_layout">Layout tastiera</string>
+    <string name="settings_symbols_set">Insieme di simboli</string>
 
 
-    <!-- Available values for the settings of the application -->
+    <!-- Available values for the theme setting -->
     <string name="settings_theme_light">Chiaro</string>
     <string name="settings_theme_dark">Scuro</string>
 
+
+    <!-- Available values for the keyboard layout setting -->
     <string name="settings_keyboard_layout_3x3">3x3</string>
     <string name="settings_keyboard_layout_two_lines">Su 2 linee</string>
 
-    <string-array name="settings_game_mode_values">
-        <item>libera</item>
-        <item>sfida</item>
-    </string-array>
+
+    <!-- Available values for the game mode setting -->
+    <string name="settings_game_mode_training">allenamento</string>
+    <string name="settings_game_mode_challenge">sfida</string>
+
+
+    <!-- Available values for the symbols set setting -->
+    <string name="settings_symbols_set_numbers">numeri</string>
+    <string name="settings_symbols_set_letters">lettere</string>
+    <string name="settings_symbols_set_emoticons">emoticons</string>
 
 </resources>

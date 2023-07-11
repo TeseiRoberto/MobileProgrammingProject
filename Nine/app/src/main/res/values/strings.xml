@@ -22,23 +22,33 @@
 
     <string name="settings_theme">Theme</string>
     <string name="settings_keyboard_layout">Keyboard layout</string>
+    <string name="settings_symbols_set">Symbol set</string>
 
-    <!-- Available values for the settings of the application -->
+    <!-- Available values for the theme setting -->
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
 
+
+    <!-- Available values for the keyboard layout setting -->
     <string name="settings_keyboard_layout_3x3">3x3</string>
     <string name="settings_keyboard_layout_two_lines">Two lines</string>
 
-    <string-array name="settings_game_mode_values">
-        <item>free</item>
-        <item>challenge</item>
-    </string-array>
+
+    <!-- Available values for the game mode setting -->
+    <string name="settings_game_mode_training">training</string>
+    <string name="settings_game_mode_challenge">challenge</string>
 
 
-    <!-- Strings used as keys in the preferences file -->
+    <!-- Available values for the symbols set setting -->
+    <string name="settings_symbols_set_numbers">numbers</string>
+    <string name="settings_symbols_set_letters">letters</string>
+    <string name="settings_symbols_set_emoticons">emoticons</string>
+
+
+    <!-- Strings used as keys in the preferences file to retrieve settings values -->
     <string name="settings_theme_key" translatable="false">THEME</string>
     <string name="settings_keyboard_layout_key" translatable="false">KBD_LAYOUT</string>
+    <string name="settings_symbols_set_key" translatable="false">SYMBOLS_SET</string>
     <string name="settings_show_tutorial_key" translatable="false">TUTORIAL</string>
 
 </resources>

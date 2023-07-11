@@ -24,6 +24,7 @@ import com.tecnoscimmia.nine.controller.GameController
 import com.tecnoscimmia.nine.controller.MenuController
 import com.tecnoscimmia.nine.controller.ScoreboardController
 import com.tecnoscimmia.nine.controller.SettingsController
+import com.tecnoscimmia.nine.model.GameSettings
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
 import java.util.Calendar
 
@@ -51,14 +52,20 @@ fun MenuScreen(cntrl: MenuController, isLandscape: Boolean)
 			GameStarter(230.dp, 300.dp, onSwipe = { cntrl.startNewGame(selectedGameMode.value) }, swipeThreshold = 300f, maxIconScale = 4f)
 		}
 
-		GameModeSelector(currGameMode = cntrl.settings.getAvailableGameModes()[selectedGameMode.value],
+		GameModeSelector(currGameMode = cntrl.availableGameModes[selectedGameMode.value],
 			onLeftArrowClick = {
 				if(selectedGameMode.value > 0)
+				{
 					selectedGameMode.value--
+					cntrl.setGameMode(cntrl.availableGameModes[selectedGameMode.value])
+				}
 			},
 			onRightArrowClick = {
-				if(selectedGameMode.value < (cntrl.settings.getAvailableGameModes().size - 1))
+				if(selectedGameMode.value < (cntrl.availableGameModes.size - 1))
+				{
 					selectedGameMode.value++
+					cntrl.setGameMode(cntrl.availableGameModes[selectedGameMode.value])
+				}
 			}
 		)
 	}
@@ -89,6 +96,8 @@ fun SettingsScreen(cntrl: SettingsController, isLandscape: Boolean)
 {
 	val currTheme 			= rememberSaveable { mutableStateOf(cntrl.getTheme()) }
 	val currKeyboardLayout 	= rememberSaveable { mutableStateOf(cntrl.getKeyboardLayout()) }
+	val currSymbolSet 		= rememberSaveable { mutableStateOf(cntrl.getSymbolsSet()) }
+
 
 	// When a setting is changed this becomes true and enables the apply changes button
 	val hasSomethingChanged = rememberSaveable { mutableStateOf(false) }
@@ -101,6 +110,15 @@ fun SettingsScreen(cntrl: SettingsController, isLandscape: Boolean)
 			currValue = currTheme.value,
 			onSettingChange = { newTheme ->
 				currTheme.value = newTheme
+				hasSomethingChanged.value = true
+			}
+		)
+
+		SettingRow(settingName = stringResource(id = R.string.settings_symbols_set),		// Setting to change the symbols set
+			availableValues = cntrl.availableSymbolSet,
+			currValue = currSymbolSet.value,
+			onSettingChange = { newSymbolSet ->
+				currSymbolSet.value = newSymbolSet
 				hasSomethingChanged.value = true
 			}
 		)
@@ -144,7 +162,7 @@ fun SettingsScreen(cntrl: SettingsController, isLandscape: Boolean)
 				shape = RoundedCornerShape(NineButtonStyle.cornerRadius),
 				onClick = {
 					hasSomethingChanged.value = false
-					cntrl.applyChangesToSettings(newTheme = currTheme.value, newKeyboardLayout = currKeyboardLayout.value)
+					cntrl.applyChangesToSettings(newTheme = currTheme.value, newKeyboardLayout = currKeyboardLayout.value, newSymbolSet = currSymbolSet.value)
 				},
 				content = { Text(text = stringResource(R.string.settings_message_apply_changes)) }
 			)
@@ -165,11 +183,12 @@ fun SettingsScreen(cntrl: SettingsController, isLandscape: Boolean)
 @Composable
 fun GameScreen(cntrl: GameController, isLandscape: Boolean)
 {
+
 	val symbolList = listOf('1', '2', '3', '4', '5', '6', '7', '8', '9')
 
 	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
-		Keyboard(symbolSet = symbolList)
+		Keyboard(symbolSet = symbolList, keyboardLayout = cntrl.settings.getKeyboardLayout())
 
 		GoBackButton(cntrl.navCntrl) // TODO: Remove this button
 	}
