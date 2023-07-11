@@ -13,6 +13,7 @@ import java.util.Date
 
 class ScoreboardController(val navigationCntrl: NavHostController, val resultRepo: MatchResultRepository)
 {
+
 	// Returns all the data contained in the MatchResult table of the db
 	fun getScoreboardData() : LiveData<List<MatchResult>>
 	{

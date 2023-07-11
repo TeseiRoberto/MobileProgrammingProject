@@ -10,6 +10,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.tecnoscimmia.nine.controller.GameController
 import com.tecnoscimmia.nine.controller.MenuController
 import com.tecnoscimmia.nine.controller.ScoreboardController
 import com.tecnoscimmia.nine.controller.SettingsController
@@ -17,6 +18,7 @@ import com.tecnoscimmia.nine.model.GameSettings
 import com.tecnoscimmia.nine.model.MatchResultDb
 import com.tecnoscimmia.nine.model.MatchResultRepository
 import com.tecnoscimmia.nine.ui.theme.NineTheme
+import com.tecnoscimmia.nine.view.GameScreen
 import com.tecnoscimmia.nine.view.MenuScreen
 import com.tecnoscimmia.nine.view.NineScreen
 import com.tecnoscimmia.nine.view.ScoreboardScreen
@@ -53,8 +55,6 @@ fun Test() // TODO: Remove this preview function
  *
  */
 
-// Stack overflow using flow https://stackoverflow.com/questions/73892063/how-to-show-our-room-database-content-in-a-lazycolumn-in-jetpack-compose
-// Tutorial on coroutine result https://www.youtube.com/watch?v=pqQkl9BInAw&t=128s
 
 class MainActivity : ComponentActivity()
 {
@@ -63,12 +63,6 @@ class MainActivity : ComponentActivity()
 	{
 		super.onCreate(savedInstanceState)
 
-		// TODO: This looks really awful, needs to be fixed
-		val activity = this
-
-		// Load game settings from preferences file
-		val gameSettings = GameSettings.getInstance(activity = this)
-
 		// Initialize the database
 		val db = MatchResultDb.getInstance(cntxt = applicationContext)
 
@@ -76,7 +70,7 @@ class MainActivity : ComponentActivity()
 			val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
 			// Instantiate the menu controller
-			val menuCntrl = MenuController(navigationCntrl = rememberNavController(), settings = gameSettings)
+			val menuCntrl = MenuController(navigationCntrl = rememberNavController(), settings = GameSettings.getInstance(this))
 
 			NineTheme()
 			{
@@ -92,25 +86,32 @@ class MainActivity : ComponentActivity()
 
 					composable(NineScreen.Scoreboard.name)
 					{
-						val scoreboardCntrl = ScoreboardController(menuCntrl.navigationCntrl, resultRepo = MatchResultRepository(db.matchResultDao()))
+						val scoreboardCntrl = ScoreboardController(menuCntrl.navigationCntrl,
+												resultRepo = MatchResultRepository(db.matchResultDao()) )
+
 						ScoreboardScreen(cntrl = scoreboardCntrl, isLandscape = isLandscape)
 					}
 
 					composable(NineScreen.Settings.name)
 					{
-						val settingsCntrl = SettingsController(menuCntrl.navigationCntrl, settings = menuCntrl.settings, activity = activity)
+						val settingsCntrl = SettingsController(navigationCntrl = menuCntrl.navigationCntrl,
+												settings = GameSettings.getInstance(this@MainActivity),
+												activity = this@MainActivity)
+
 						SettingsScreen(cntrl = settingsCntrl, isLandscape = isLandscape)
 					}
 
-					/*composable(NineScreen.Game.name)
+					composable(NineScreen.Game.name)
 					{
-						val gameCntrl = GameController(mainCntrl.navigationCntrl)
+						val gameCntrl = GameController(menuCntrl.navigationCntrl,
+												settings = GameSettings.getInstance(this@MainActivity))
+
 						GameScreen(cntrl = gameCntrl, isLandscape = isLandscape)
-					}*/
+					}
 
 					/*composable(NineScreen.Tutorial.name)
 					{
-						val gameCntrl = GameController(mainCntrl.navigationCntrl)
+						val gameCntrl = GameController(menuCntrl.navigationCntrl)
 						TutorialScreen(cntrl = gameCntrl, isLandscape = isLandscape)
 					}*/
 				}

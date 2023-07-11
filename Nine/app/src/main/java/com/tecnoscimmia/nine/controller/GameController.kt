@@ -1,15 +1,14 @@
 package com.tecnoscimmia.nine.controller
 
 import androidx.navigation.NavHostController
+import com.tecnoscimmia.nine.model.GameSettings
 
 /*
- * This file defines the GameController class, this class defines the app behaviour for when the user
- * is actually playing the game (in the gameScreen view)
+ * This file defines the GameController class, this class defines the app behaviour when the player is playing a match
  */
 
-class GameController(navCntrl: NavHostController)
+class GameController(val navCntrl: NavHostController, val settings: GameSettings)
 {
-	var navigationCntrl = navCntrl
 
 	// TODO: Add implementation...
 }

@@ -28,7 +28,7 @@
     <string name="settings_theme_dark">Dark</string>
 
     <string name="settings_keyboard_layout_3x3">3x3</string>
-    <string name="settings_keyboard_layout_in_line">In line</string>
+    <string name="settings_keyboard_layout_two_lines">Two lines</string>
 
     <string-array name="settings_game_mode_values">
         <item>free</item>

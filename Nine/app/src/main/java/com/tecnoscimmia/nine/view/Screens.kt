@@ -11,13 +11,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.tecnoscimmia.nine.R
+import com.tecnoscimmia.nine.controller.GameController
 import com.tecnoscimmia.nine.controller.MenuController
 import com.tecnoscimmia.nine.controller.ScoreboardController
 import com.tecnoscimmia.nine.controller.SettingsController
@@ -42,12 +45,11 @@ fun MenuScreen(cntrl: MenuController, isLandscape: Boolean)
 		if(isLandscape)
 		{
 			MenuPanelLandscape(onClickSettings = cntrl::switchToSettingsScreen, onClickScoreboard = cntrl::switchToScoreboardScreen)
-			GameStarter(250f, 200f, onSwipe = { cntrl.startNewGame(selectedGameMode.value) }, swipeThreshold = 300f, maxIconScale = 4f)
+			GameStarter(250.dp, 200.dp, onSwipe = { cntrl.startNewGame(selectedGameMode.value) }, swipeThreshold = 300f, maxIconScale = 4f)
 		} else {
 			MenuPanelPortrait(onClickSettings = cntrl::switchToSettingsScreen, onClickScoreboard = cntrl::switchToScoreboardScreen)
-			GameStarter(230f, 300f, onSwipe = { cntrl.startNewGame(selectedGameMode.value) }, swipeThreshold = 300f, maxIconScale = 4f)
+			GameStarter(230.dp, 300.dp, onSwipe = { cntrl.startNewGame(selectedGameMode.value) }, swipeThreshold = 300f, maxIconScale = 4f)
 		}
-
 
 		GameModeSelector(currGameMode = cntrl.settings.getAvailableGameModes()[selectedGameMode.value],
 			onLeftArrowClick = {
@@ -159,13 +161,17 @@ fun SettingsScreen(cntrl: SettingsController, isLandscape: Boolean)
 	}
 }
 
-/*
+
 @Composable
-fun GameScreen(isLandscape: Boolean)
+fun GameScreen(cntrl: GameController, isLandscape: Boolean)
 {
+	val symbolList = listOf('1', '2', '3', '4', '5', '6', '7', '8', '9')
+
 	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
-		// TODO: Add implementation
+		Keyboard(symbolSet = symbolList)
+
+		GoBackButton(cntrl.navCntrl) // TODO: Remove this button
 	}
-}*/
+}
 

@@ -3,12 +3,15 @@ package com.tecnoscimmia.nine.view
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -36,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.tecnoscimmia.nine.R
@@ -53,9 +58,9 @@ import com.tecnoscimmia.nine.model.MatchResult
 
 // A simple text used to display the title of a screen, this ensures that all screens will use the same font style
 @Composable
-fun ScreenTitle(title: String)
+fun ScreenTitle(title: String, verticalPadding: Dp = 12.dp)
 {
-	Text(modifier = Modifier.padding(vertical = 12.dp), text = title, fontSize = NineTextStyle.title.fontSize,
+	Text(modifier = Modifier.padding(vertical = verticalPadding), text = title, fontSize = NineTextStyle.title.fontSize,
 		fontWeight = NineTextStyle.title.fontWeight, fontFamily = NineTextStyle.title.fontFamily)
 }
 
@@ -100,18 +105,6 @@ fun GoBackButton(navigationCntrl: NavHostController, onClick: ( () -> Unit)? = n
 }
 
 
-// A simple icon that indicates to the user that something is loading in background
-@Composable
-fun LoadingIcon()
-{
-	Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center)
-	{
-		Text(text = "LOADING DATA") // TODO: Replace this text with an animated icon
-	}
-
-}
-
-
 // A row with 2 buttons used to change the game mode and some text that displays the game mode currently selected
 @Composable
 fun GameModeSelector(currGameMode: String, onLeftArrowClick: () -> Unit, onRightArrowClick: () -> Unit)
@@ -138,7 +131,7 @@ fun GameModeSelector(currGameMode: String, onLeftArrowClick: () -> Unit, onRight
 // A box containing an icon that is listening for swipe events, when a swipe (towards the top of the device) happens
 // the icon gets scaled (on the y axis) and if the swipe is grater than the swipeThreshold then the given onSwipe callback is called
 @Composable
-fun GameStarter(width: Float, height: Float, onSwipe: () -> Unit, swipeThreshold: Float, maxIconScale: Float)
+fun GameStarter(width: Dp, height: Dp, onSwipe: () -> Unit, swipeThreshold: Float, maxIconScale: Float)
 {
 	val c = LocalContext.current // TODO: To be removed, only for debug!!!
 
@@ -146,7 +139,7 @@ fun GameStarter(width: Float, height: Float, onSwipe: () -> Unit, swipeThreshold
 	val currSwipeAmount = remember { mutableStateOf(0f) }			// Value changed when the user swipes in the box
 
 	val modifier = Modifier
-		.size(width = width.dp, height = height.dp)
+		.size(width = width, height = height)
 		.background(Color.Red) // TODO: To be removed, only for debug!!!
 		.pointerInput(Unit)
 		{
@@ -225,7 +218,7 @@ fun Scoreboard(data: List<MatchResult>?, widthOccupation: Float, heightOccupatio
 
 		if(data.isNullOrEmpty())
 		{
-			Text(text = stringResource(id = R.string.scoreboard_message_is_empty), modifier = Modifier.padding(vertical = 24.dp),
+			Text(text = stringResource(id = R.string.scoreboard_message_is_empty), modifier = Modifier.padding(vertical = 48.dp),
 				fontWeight = NineTextStyle.subTitle.fontWeight, fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
 		} else {
 			LazyColumn(modifier = Modifier.fillMaxWidth())
@@ -285,6 +278,9 @@ fun ScoreboardEntry(rank: Int, time: String, date: String, gameMode: String)
 }
 
 
+// A row that contains the name of a setting, the current value and a button that enables a drop down menu, this menu contains
+// all the available values for the setting. When the user select an entry from the drop down menu then onSettingChange is
+// called and the value of the entry is given as parameter
 @Composable
 fun SettingRow(settingName: String, availableValues: List<String>, currValue: String, onSettingChange: (newValue: String) -> Unit)
 {
@@ -319,7 +315,6 @@ fun SettingRow(settingName: String, availableValues: List<String>, currValue: St
 				availableValues.forEach { value ->			// For each available value create an item in the drop down menu
 					DropdownMenuItem(text = { Text(text = value) },
 						onClick = {
-							//settingValue.value = value		// Change text on the button
 							isMenuExpanded.value = false	// Close the drop down menu
 							onSettingChange(value)			// Call the given callback with the selected setting
 						}
@@ -327,6 +322,37 @@ fun SettingRow(settingName: String, availableValues: List<String>, currValue: St
 				}
 			}
 
+		}
+	}
+}
+
+
+// A button that contains a symbol, this is used to implement the Keyboard and the SymbolRow widgets
+@Composable
+fun SymbolButton(width: Dp, height: Dp, symbol: Char, backgroundColor: Color = Color.White, borderColor: Color = Color.Black,
+				onClick: (Char) -> Unit, isSelected: Boolean = false)
+{
+	val modifier = Modifier
+		.size(width = width, height = height)
+		.background(color = backgroundColor)
+		.border(border = BorderStroke(width = if(isSelected) 3.dp else 1.dp, color = borderColor), shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+
+	Button(modifier = modifier, onClick = { onClick(symbol) }, shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+	{
+		Text(text = symbol.toString(), fontWeight = NineTextStyle.subTitle.fontWeight,
+				fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
+	}
+}
+
+
+@Composable
+fun Keyboard(symbolSet: List<Char>)
+{
+	// This is the in-line layout
+	Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
+	{
+		symbolSet.forEach() { symbol ->
+			SymbolButton(width = 64.dp, height = 64.dp, symbol = symbol, onClick = {} )
 		}
 	}
 }

@@ -19,17 +19,18 @@ class SettingsController(val navigationCntrl: NavHostController, val settings: G
 
 	// List of all the available keyboard layouts
 	val availableKeyboardLayouts = listOf(
-		activity.resources.getString(R.string.settings_keyboard_layout_3x3),
-		activity.resources.getString(R.string.settings_keyboard_layout_in_line)
+		activity.resources.getString(R.string.settings_keyboard_layout_two_lines),
+		activity.resources.getString(R.string.settings_keyboard_layout_3x3)
 	)
+
 
 	// This function converts the internal representation of the keyboard layout value to the UI one
 	fun getTheme() : String
 	{
 		return when(settings.getTheme())
 		{
-			GameSettings.LIGHT_THEME -> activity.resources.getString(R.string.settings_theme_light)
-			GameSettings.DARK_THEME -> activity.resources.getString(R.string.settings_theme_dark)
+			GameSettings.ThemeSetting.LIGHT_THEME -> activity.resources.getString(R.string.settings_theme_light)
+			GameSettings.ThemeSetting.DARK_THEME -> activity.resources.getString(R.string.settings_theme_dark)
 			else -> ""
 		}
 	}
@@ -40,8 +41,8 @@ class SettingsController(val navigationCntrl: NavHostController, val settings: G
 	{
 		return when(settings.getKeyboardLayout())
 		{
-			GameSettings.KBD_LAYOUT_3X3 -> activity.resources.getString(R.string.settings_keyboard_layout_3x3)
-			GameSettings.KBD_LAYOUT_IN_LINE -> activity.resources.getString(R.string.settings_keyboard_layout_in_line)
+			GameSettings.KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT -> activity.resources.getString(R.string.settings_keyboard_layout_two_lines)
+			GameSettings.KeyboardLayoutSetting.THREE_BY_THREE_KBD_LAYOUT -> activity.resources.getString(R.string.settings_keyboard_layout_3x3)
 			else -> ""
 		}
 	}
@@ -52,8 +53,8 @@ class SettingsController(val navigationCntrl: NavHostController, val settings: G
 	{
 		val newValue = when(newTheme)							// Convert given string to the internal representation that game settings class uses
 		{
-			activity.getString(R.string.settings_theme_dark) -> GameSettings.DARK_THEME
-			else -> GameSettings.LIGHT_THEME
+			activity.getString(R.string.settings_theme_dark) -> GameSettings.ThemeSetting.DARK_THEME
+			else -> GameSettings.ThemeSetting.LIGHT_THEME
 		}
 
 		settings.setTheme(newValue)								// Update setting value
@@ -67,8 +68,8 @@ class SettingsController(val navigationCntrl: NavHostController, val settings: G
 	{
 		val newValue = when(newLayout)							// Convert given string to the internal representation that game settings class uses
 		{
-			activity.getString(R.string.settings_keyboard_layout_3x3) -> GameSettings.KBD_LAYOUT_3X3
-			else -> GameSettings.KBD_LAYOUT_IN_LINE
+			activity.getString(R.string.settings_keyboard_layout_3x3) -> GameSettings.KeyboardLayoutSetting.THREE_BY_THREE_KBD_LAYOUT
+			else -> GameSettings.KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT
 		}
 
 		settings.setKeyboardLayout(newValue)					// Update setting value

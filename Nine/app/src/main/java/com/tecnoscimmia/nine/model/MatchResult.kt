@@ -74,6 +74,7 @@ class MatchResultRepository(private val dao: MatchResultDao)
 {
 	private val matchResultsData = dao.getAllResults()
 
+
 	// Inserts a new record in the MatchResult table of the db
 	fun addMatchResult(timestamp: Date, matchDuration: String, gameMode: String)
 	{
@@ -85,7 +86,6 @@ class MatchResultRepository(private val dao: MatchResultDao)
 			dao.insertResult(MatchResult(date = date, time = matchDuration, gameMode = gameMode))
 		}
 	}
-
 
 	fun getAllResults() : LiveData<List<MatchResult>>
 	{
