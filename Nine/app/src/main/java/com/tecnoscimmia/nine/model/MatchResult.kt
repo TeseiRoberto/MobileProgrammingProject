@@ -2,6 +2,7 @@ package com.tecnoscimmia.nine.model
 
 import android.content.Context
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -37,7 +38,7 @@ interface MatchResultDao
 	suspend fun insertResult(result: MatchResult)				// Inserts a new match result in the db
 
 	@Query("SELECT * FROM MatchResult")							// Returns a list containing all the match results stored in the db
-	fun getAllResults() : LiveData<List<MatchResult>>
+	suspend fun getAllResults() : List<MatchResult>
 
 	@Query("DELETE FROM MatchResult")							// Removes all the match results currently stored in the db
 	suspend fun clearAllResults()
@@ -72,8 +73,8 @@ abstract class MatchResultDb : RoomDatabase()
 
 class MatchResultRepository(private val dao: MatchResultDao)
 {
-	private val matchResultsData = dao.getAllResults()
-
+	//private val matchResultsData = dao.getAllResults()
+	private val matchResultsData = MutableLiveData<List<MatchResult>>()
 
 	// Inserts a new record in the MatchResult table of the db
 	fun addMatchResult(timestamp: Date, matchDuration: String, gameMode: String)
@@ -87,8 +88,18 @@ class MatchResultRepository(private val dao: MatchResultDao)
 		}
 	}
 
+	/*fun getAllResults() : LiveData<List<MatchResult>>
+	{
+		return matchResultsData
+	}*/
+
 	fun getAllResults() : LiveData<List<MatchResult>>
 	{
+		CoroutineScope(Dispatchers.Main).launch(Dispatchers.IO)
+		{
+			matchResultsData.postValue(dao.getAllResults())
+		}
+
 		return matchResultsData
 	}
 

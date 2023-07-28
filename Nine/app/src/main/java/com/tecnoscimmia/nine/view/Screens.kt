@@ -11,22 +11,28 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.tecnoscimmia.nine.R
-import com.tecnoscimmia.nine.controller.GameController
-import com.tecnoscimmia.nine.controller.MenuController
-import com.tecnoscimmia.nine.controller.ScoreboardController
-import com.tecnoscimmia.nine.controller.SettingsController
-import com.tecnoscimmia.nine.model.GameSettings
+import com.tecnoscimmia.nine.controller.GameViewModel
+import com.tecnoscimmia.nine.controller.MenuViewModel
+import com.tecnoscimmia.nine.controller.ScoreboardViewModel
+import com.tecnoscimmia.nine.controller.SettingsViewModel
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
-import java.util.Calendar
+import com.tecnoscimmia.nine.view.widgets.GameModeSelector
+import com.tecnoscimmia.nine.view.widgets.GameStarter
+import com.tecnoscimmia.nine.view.widgets.GoBackButton
+import com.tecnoscimmia.nine.view.widgets.InputRow
+import com.tecnoscimmia.nine.view.widgets.Keyboard
+import com.tecnoscimmia.nine.view.widgets.MenuPanelLandscape
+import com.tecnoscimmia.nine.view.widgets.MenuPanelPortrait
+import com.tecnoscimmia.nine.view.widgets.Scoreboard
+import com.tecnoscimmia.nine.view.widgets.ScreenTitle
+import com.tecnoscimmia.nine.view.widgets.SettingRow
+
 
 /*
  * This file contains the definitions of all the screens that the application is composed of
@@ -36,102 +42,74 @@ import java.util.Calendar
 // Enumeration of all the screens that makes the application
 enum class NineScreen { MainMenu, Scoreboard, Settings, Game, Tutorial }
 
-@Composable
-fun MenuScreen(cntrl: MenuController, isLandscape: Boolean)
-{
-	val selectedGameMode = rememberSaveable { mutableStateOf(0) }
 
+@Composable
+fun MenuScreen(navigationCntrl : NavHostController, menuVM: MenuViewModel, isLandscape: Boolean)
+{
 	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
 		if(isLandscape)
 		{
-			MenuPanelLandscape(onClickSettings = cntrl::switchToSettingsScreen, onClickScoreboard = cntrl::switchToScoreboardScreen)
-			GameStarter(250.dp, 200.dp, onSwipe = { cntrl.startNewGame(selectedGameMode.value) }, swipeThreshold = 300f, maxIconScale = 4f)
+			MenuPanelLandscape(onClickSettings = { navigationCntrl.navigate(route = NineScreen.Settings.name) },
+								onClickScoreboard = { navigationCntrl.navigate(route = NineScreen.Scoreboard.name) })
+
+			GameStarter(250.dp, 180.dp, onSwipe = { navigationCntrl.navigate(route = NineScreen.Game.name) }, swipeThreshold = 300f, maxIconScale = 4f)
 		} else {
-			MenuPanelPortrait(onClickSettings = cntrl::switchToSettingsScreen, onClickScoreboard = cntrl::switchToScoreboardScreen)
-			GameStarter(230.dp, 300.dp, onSwipe = { cntrl.startNewGame(selectedGameMode.value) }, swipeThreshold = 300f, maxIconScale = 4f)
+
+			MenuPanelPortrait(onClickSettings = { navigationCntrl.navigate(route = NineScreen.Settings.name) },
+				onClickScoreboard = { navigationCntrl.navigate(route = NineScreen.Scoreboard.name) })
+
+			GameStarter(230.dp, 300.dp, onSwipe = { navigationCntrl.navigate(route = NineScreen.Game.name) }, swipeThreshold = 300f, maxIconScale = 4f)
 		}
 
-		GameModeSelector(currGameMode = cntrl.availableGameModes[selectedGameMode.value],
-			onLeftArrowClick = {
-				if(selectedGameMode.value > 0)
-				{
-					selectedGameMode.value--
-					cntrl.setGameMode(cntrl.availableGameModes[selectedGameMode.value])
-				}
-			},
-			onRightArrowClick = {
-				if(selectedGameMode.value < (cntrl.availableGameModes.size - 1))
-				{
-					selectedGameMode.value++
-					cntrl.setGameMode(cntrl.availableGameModes[selectedGameMode.value])
-				}
-			}
-		)
+		GameModeSelector(menuVM.getGameMode(), onLeftArrowClick = menuVM::setPrevGameMode, onRightArrowClick = menuVM::setNextGameMode)
 	}
 }
 
 
 @Composable
-fun ScoreboardScreen(cntrl: ScoreboardController, isLandscape: Boolean)
+fun ScoreboardScreen(navigationCntrl: NavHostController, scoreboardVM: ScoreboardViewModel, isLandscape: Boolean)
 {
-	val scoreboardData = cntrl.getScoreboardData().observeAsState().value
+	val scoreboardData = scoreboardVM.getScoreboardData().observeAsState(initial = listOf())
 
 	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
 		ScreenTitle(title = stringResource(id = R.string.scoreboard_screen_title))
 
 		if(isLandscape)
-			Scoreboard(data = scoreboardData, widthOccupation = 0.8f, heightOccupation = 0.6f)
+			Scoreboard(data = scoreboardData.value, widthOccupation = 0.8f, heightOccupation = 0.6f)
 		else
-			Scoreboard(data = scoreboardData, widthOccupation = 1f, heightOccupation = 0.9f)
+			Scoreboard(data = scoreboardData.value, widthOccupation = 1f, heightOccupation = 0.9f)
 
-		GoBackButton(cntrl.navigationCntrl)
+		GoBackButton(navigationCntrl)
 	}
 }
 
 
 @Composable
-fun SettingsScreen(cntrl: SettingsController, isLandscape: Boolean)
+fun SettingsScreen(navigationCntrl: NavHostController, settingsVM: SettingsViewModel, isLandscape: Boolean)
 {
-	val currTheme 			= rememberSaveable { mutableStateOf(cntrl.getTheme()) }
-	val currKeyboardLayout 	= rememberSaveable { mutableStateOf(cntrl.getKeyboardLayout()) }
-	val currSymbolSet 		= rememberSaveable { mutableStateOf(cntrl.getSymbolsSet()) }
-
-
-	// When a setting is changed this becomes true and enables the apply changes button
-	val hasSomethingChanged = rememberSaveable { mutableStateOf(false) }
-
 	// If device is in landscape mode then settings are positioned into 2 adjacent columns, otherwise
 	// they are all in the same column. We define the settings UI here as 2 lambdas to avoid code repetition.
 	val settingSet1 = @Composable {
 		SettingRow(settingName = stringResource(id = R.string.settings_theme),				// Setting to change theme
-			availableValues = cntrl.availableThemes,
-			currValue = currTheme.value,
-			onSettingChange = { newTheme ->
-				currTheme.value = newTheme
-				hasSomethingChanged.value = true
-			}
+			availableValues = settingsVM.getAvailableThemes(),
+			currValue = settingsVM.getTheme(),
+			onSettingChange = settingsVM::setTheme
 		)
 
 		SettingRow(settingName = stringResource(id = R.string.settings_symbols_set),		// Setting to change the symbols set
-			availableValues = cntrl.availableSymbolSet,
-			currValue = currSymbolSet.value,
-			onSettingChange = { newSymbolSet ->
-				currSymbolSet.value = newSymbolSet
-				hasSomethingChanged.value = true
-			}
+			availableValues = settingsVM.getAvailableSymbolsSets(),
+			currValue = settingsVM.getSymbolsSet(),
+			onSettingChange = settingsVM::setSymbolsSet
 		)
 	}
 
 	val settingSet2 = @Composable {
 		SettingRow(settingName = stringResource(id = R.string.settings_keyboard_layout),	// Setting to change keyboard layout
-			availableValues = cntrl.availableKeyboardLayouts,
-			currValue = currKeyboardLayout.value,
-			onSettingChange = { newLayout ->
-				currKeyboardLayout.value = newLayout
-				hasSomethingChanged.value = true
-			}
+			availableValues = settingsVM.getAvailableKeyboardLayouts(),
+			currValue = settingsVM.getKeyboardLayout(),
+			onSettingChange = settingsVM::setKeyboardLayout
 		)
 	}
 
@@ -139,7 +117,7 @@ fun SettingsScreen(cntrl: SettingsController, isLandscape: Boolean)
 	{
 		ScreenTitle(title = stringResource(id = R.string.settings_screen_title))
 
-		if(isLandscape)									// If landscape mode then put settingsSets in 2 adjacent columns
+		if(isLandscape)										// If device is in landscape mode then put settingsSets in 2 adjacent columns
 		{
 			Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
 			{
@@ -149,7 +127,7 @@ fun SettingsScreen(cntrl: SettingsController, isLandscape: Boolean)
 				Column(modifier = Modifier.fillMaxWidth().weight(0.5f), horizontalAlignment = Alignment.CenterHorizontally,
 					verticalArrangement = Arrangement.SpaceBetween, content = { settingSet2() } )
 			}
-		} else {										// Otherwise put one on top of the other
+		} else {											// Otherwise put one on top of the other
 			settingSet1()
 			settingSet2()
 		}
@@ -158,39 +136,43 @@ fun SettingsScreen(cntrl: SettingsController, isLandscape: Boolean)
 			horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
 		{
 			// Apply changes button
-			Button(modifier = Modifier.weight(0.5f).padding(12.dp), enabled = hasSomethingChanged.value,
+			Button(modifier = Modifier.weight(0.5f).padding(12.dp), enabled = settingsVM.hasSomethingChanged(),
 				shape = RoundedCornerShape(NineButtonStyle.cornerRadius),
-				onClick = {
-					hasSomethingChanged.value = false
-					cntrl.applyChangesToSettings(newTheme = currTheme.value, newKeyboardLayout = currKeyboardLayout.value, newSymbolSet = currSymbolSet.value)
-				},
+				onClick = settingsVM::saveChangesToSettings,
 				content = { Text(text = stringResource(R.string.settings_message_apply_changes)) }
 			)
 
 			// Start tutorial button
 			Button(modifier = Modifier.weight(0.5f).padding(12.dp), shape = RoundedCornerShape(NineButtonStyle.cornerRadius),
-				onClick = { cntrl.startTutorial() },
+				onClick = { /* TODO: Uncomment when tutorial screen is implemented!!! navigationCntrl.navigate(route = NineScreen.Tutorial.name)*/ },
 				content = { Text(text = stringResource(R.string.settings_message_start_tutorial)) }
 			)
 		}
 
 		// Go back button
-		GoBackButton(cntrl.navigationCntrl)
+		GoBackButton(navigationCntrl)
 	}
 }
 
 
 @Composable
-fun GameScreen(cntrl: GameController, isLandscape: Boolean)
+fun GameScreen(navigationCntrl: NavHostController, gameVM: GameViewModel, isLandscape: Boolean)
 {
-
-	val symbolList = listOf('1', '2', '3', '4', '5', '6', '7', '8', '9')
-
 	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
-		Keyboard(symbolSet = symbolList, keyboardLayout = cntrl.settings.getKeyboardLayout())
+		InputRow(userInput = gameVM.getUserInput(), currIndex = gameVM.getSelectedIndex())
 
-		GoBackButton(cntrl.navCntrl) // TODO: Remove this button
+		Keyboard(isLandscape = isLandscape, symbolSet = gameVM.getSymbolsSet(), keyboardLayout = gameVM.getKeyboardLayout(),
+			buttonsPadding = 6.dp, onBtnClick = { symbol -> gameVM.insertSymbol(symbol = symbol) })
+
+		// Debug buttons to test the InputRow widget
+		Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
+		{
+			Button(onClick = gameVM::selectPrevSymbol, content = { Text(text = "MOVE BACK") })
+			Button(onClick = gameVM::selectNextSymbol, content = { Text(text = "MOVE FORWARD") })
+		}
+
+		GoBackButton(navigationCntrl) // TODO: Remove this button
 	}
 }
 

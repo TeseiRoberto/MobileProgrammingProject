@@ -41,8 +41,13 @@
 
     <!-- Available values for the symbols set setting -->
     <string name="settings_symbols_set_numbers">numbers</string>
+    <string name="numbers_symbols">0,1,2,3,4,5,6,7,8,9</string>
+
     <string name="settings_symbols_set_letters">letters</string>
+    <string name="letters_symbols">A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z</string>
+
     <string name="settings_symbols_set_emoticons">emoticons</string>
+    <string name="emoticons_symbols">0x1F600,0x1F602,0x1F605,0x1F607,0x1F608,0x1F609,0x1F60A,0x1F60B,0x1F60D,0x1F60E,0x1F60F,0x1F611,0x1F61D,0x1F621,0x1F62C,0x1F62E,0x1F631,0x1F922,0x1F929,0x1F92F,0x1F493,0x1F4A3,0x1F4A9</string>
 
 
     <!-- Strings used as keys in the preferences file to retrieve settings values -->
@@ -50,5 +55,8 @@
     <string name="settings_keyboard_layout_key" translatable="false">KBD_LAYOUT</string>
     <string name="settings_symbols_set_key" translatable="false">SYMBOLS_SET</string>
     <string name="settings_show_tutorial_key" translatable="false">TUTORIAL</string>
+
+    <!-- Name of the shared preferences file used to store settings -->
+    <string name="preferences_file_name" translatable="false">ninePreferences</string>
 
 </resources>

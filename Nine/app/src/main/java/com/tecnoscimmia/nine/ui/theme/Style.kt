@@ -66,6 +66,8 @@ class NineIconStyle
 		val normalHeight 		= 64.dp
 		val shortWidth			= 48.dp
 		val shortHeight			= 48.dp
+		val veryShortWidth		= 38.dp
+		val veryShortHeight		= 38.dp
 
 		val defaultModifier = Modifier.fillMaxSize()
 	}

@@ -1,135 +1,151 @@
 package com.tecnoscimmia.nine.controller
 
-import android.content.Context
-import androidx.navigation.NavHostController
-import com.tecnoscimmia.nine.MainActivity
+import android.content.res.Resources
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.CreationExtras
 import com.tecnoscimmia.nine.R
 import com.tecnoscimmia.nine.model.GameSettings
+import com.tecnoscimmia.nine.model.SettingsRepository
 
 /*
-* This file defines the controller for the settings screen
+* This file defines the view-model for the settings screen
 */
 
-class SettingsController(val navigationCntrl: NavHostController, val settings: GameSettings, val appCntxt: Context)
+
+class SettingsViewModel(private val appResources: Resources, private val settings: GameSettings, private val settingsRepo: SettingsRepository) : ViewModel()
 {
-	// List of all the available themes
-	val availableThemes = listOf(
-		appCntxt.resources.getString(R.string.settings_theme_light),
-		appCntxt.resources.getString(R.string.settings_theme_dark)
-	)
-
-	// List of all the available keyboard layouts
-	val availableKeyboardLayouts = listOf(
-		appCntxt.resources.getString(R.string.settings_keyboard_layout_two_lines),
-		appCntxt.resources.getString(R.string.settings_keyboard_layout_3x3)
-	)
-
-	val availableSymbolSet = listOf(
-		appCntxt.getString(R.string.settings_symbols_set_numbers),
-		appCntxt.getString(R.string.settings_symbols_set_letters),
-		appCntxt.getString(R.string.settings_symbols_set_emoticons)
-		)
+	private var currTheme 			= mutableStateOf(settings.getTheme())
+	private var currKeyboardLayout	= mutableStateOf(settings.getKeyboardLayout())
+	private var currSymbolsSet		= mutableStateOf(settings.getSymbolsSet())
+	private var hasSomethingChanged = mutableStateOf(false)
 
 
-	// This function converts the internal representation of the keyboard layout value to the UI one
+	// Getter methods (needed because the view should not access the repository directly)
+	fun getAvailableThemes() : 			List<String> { return settingsRepo.getAvailableThemes() }
+	fun getAvailableKeyboardLayouts() : List<String> { return settingsRepo.getAvailableKeyboardLayouts() }
+	fun getAvailableSymbolsSets() : 	List<String> { return settingsRepo.getAvailableSymbolsSets() }
+
+	fun hasSomethingChanged() : 		Boolean { return hasSomethingChanged.value }
+
+
+	// Converts the internal representation of the theme value to the UI one
 	fun getTheme() : String
 	{
-		return when(settings.getTheme())
+		return when(currTheme.value)
 		{
-			GameSettings.ThemeSetting.LIGHT_THEME -> appCntxt.resources.getString(R.string.settings_theme_light)
-			GameSettings.ThemeSetting.DARK_THEME -> appCntxt.resources.getString(R.string.settings_theme_dark)
-			else -> ""
+			GameSettings.ThemeSetting.LIGHT_THEME -> appResources.getString(R.string.settings_theme_light)
+			GameSettings.ThemeSetting.DARK_THEME ->  appResources.getString(R.string.settings_theme_dark)
 		}
 	}
 
 
-	// This function converts the internal representation of the keyboard layout value to the UI one
+	// Converts the internal representation of the keyboard layout value to the UI one
 	fun getKeyboardLayout() : String
 	{
-		return when(settings.getKeyboardLayout())
+		return when(currKeyboardLayout.value)
 		{
-			GameSettings.KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT -> appCntxt.resources.getString(R.string.settings_keyboard_layout_two_lines)
-			GameSettings.KeyboardLayoutSetting.THREE_BY_THREE_KBD_LAYOUT -> appCntxt.resources.getString(R.string.settings_keyboard_layout_3x3)
-			else -> ""
+			GameSettings.KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT -> appResources.getString(R.string.settings_keyboard_layout_two_lines)
+			GameSettings.KeyboardLayoutSetting.THREE_BY_THREE_KBD_LAYOUT -> appResources.getString(R.string.settings_keyboard_layout_3x3)
 		}
 	}
 
 
-	// This function converts the internal representation of the symbol set value to the UI one
+	// Converts the internal representation of the symbol set value to the UI one
 	fun getSymbolsSet() : String
 	{
-		return when(settings.getSymbolsSet())
+		return when(currSymbolsSet.value)
 		{
-			GameSettings.SymbolsSetSetting.NUMBERS_SYMBOLS_SET -> appCntxt.resources.getString(R.string.settings_symbols_set_numbers)
-			GameSettings.SymbolsSetSetting.LETTERS_SYMBOLS_SET -> appCntxt.resources.getString(R.string.settings_symbols_set_letters)
-			GameSettings.SymbolsSetSetting.EMOTICONS_SYMBOLS_SET -> appCntxt.resources.getString(R.string.settings_symbols_set_emoticons)
-			else -> ""
+			GameSettings.SymbolsSetSetting.NUMBERS_SYMBOLS_SET -> appResources.getString(R.string.settings_symbols_set_numbers)
+			GameSettings.SymbolsSetSetting.LETTERS_SYMBOLS_SET -> appResources.getString(R.string.settings_symbols_set_letters)
+			GameSettings.SymbolsSetSetting.EMOTICONS_SYMBOLS_SET -> appResources.getString(R.string.settings_symbols_set_emoticons)
 		}
 	}
 
 
-	// Changes the value of the theme setting and sets the new theme for the application
-	private fun setTheme(newTheme: String)
+	// Converts the UI representation of the theme to the internal one and updates the current selected theme
+	fun setTheme(newTheme: String)
 	{
-		val newValue = when(newTheme)							// Convert given string to the internal representation that game settings class uses
+		val newInternalTheme = when(newTheme)
 		{
-			appCntxt.getString(R.string.settings_theme_dark) -> GameSettings.ThemeSetting.DARK_THEME
-			appCntxt.getString(R.string.settings_theme_light) -> GameSettings.ThemeSetting.LIGHT_THEME
+			appResources.getString(R.string.settings_theme_light) -> GameSettings.ThemeSetting.LIGHT_THEME
+			appResources.getString(R.string.settings_theme_dark) -> GameSettings.ThemeSetting.DARK_THEME
 			else -> return
 		}
 
-		settings.setTheme(newValue)								// Update setting value
-
-		/*TODO: Add implementation (need to actually change the app theme)*/
+		currTheme.value = newInternalTheme
+		hasSomethingChanged.value = true
 	}
 
 
-	// Changes the value of the keyboard layout setting
-	private fun setKeyboardLayout(newLayout: String)
+	// Converts the UI representation of the keyboard layout to the internal one and updates the current selected layout
+	fun setKeyboardLayout(newLayout: String)
 	{
-		val newValue = when(newLayout)							// Convert given string to the internal representation that game settings class uses
+		val newInternalLayout = when(newLayout)
 		{
-			appCntxt.getString(R.string.settings_keyboard_layout_two_lines) -> GameSettings.KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT
-			appCntxt.getString(R.string.settings_keyboard_layout_3x3) -> GameSettings.KeyboardLayoutSetting.THREE_BY_THREE_KBD_LAYOUT
+			appResources.getString(R.string.settings_keyboard_layout_3x3) -> GameSettings.KeyboardLayoutSetting.THREE_BY_THREE_KBD_LAYOUT
+			appResources.getString(R.string.settings_keyboard_layout_two_lines) -> GameSettings.KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT
 			else -> return
 		}
 
-		settings.setKeyboardLayout(newValue)					// Update setting value
+		currKeyboardLayout.value = newInternalLayout
+		hasSomethingChanged.value = true
 	}
 
 
-	// Changes the value of the symbols set setting
-	private fun setSymbolsSet(newSymbolsSet: String)
+	// Converts the UI representation of the symbols set to the internal one and updates the game settings class with it
+	fun setSymbolsSet(newSymbolsSet: String)
 	{
-		val newValue = when(newSymbolsSet)						// Convert given string to the internal representation that game settings class uses
+		val newInternalSymbolsSet = when(newSymbolsSet)
 		{
-			appCntxt.getString(R.string.settings_symbols_set_numbers) -> GameSettings.SymbolsSetSetting.NUMBERS_SYMBOLS_SET
-			appCntxt.getString(R.string.settings_symbols_set_letters) -> GameSettings.SymbolsSetSetting.LETTERS_SYMBOLS_SET
-			appCntxt.getString(R.string.settings_symbols_set_emoticons) -> GameSettings.SymbolsSetSetting.EMOTICONS_SYMBOLS_SET
+			appResources.getString(R.string.settings_symbols_set_numbers) -> GameSettings.SymbolsSetSetting.NUMBERS_SYMBOLS_SET
+			appResources.getString(R.string.settings_symbols_set_letters) -> GameSettings.SymbolsSetSetting.LETTERS_SYMBOLS_SET
+			appResources.getString(R.string.settings_symbols_set_emoticons) -> GameSettings.SymbolsSetSetting.EMOTICONS_SYMBOLS_SET
 			else -> return
 		}
 
-		settings.setSymbolsSet(newValue)						// Update setting value
+		currSymbolsSet.value = newInternalSymbolsSet
+		hasSomethingChanged.value = true
 	}
 
 
-	// Updates the game settings with the given values
-	fun applyChangesToSettings(newTheme: String, newKeyboardLayout: String, newSymbolSet: String)
+	// Apply changes to the game settings class
+	fun saveChangesToSettings()
 	{
-		if(newTheme != getTheme() && newTheme in availableThemes)
-			setTheme(newTheme)
+		if(currTheme.value != settings.getTheme())
+		{
+			settings.setTheme(newTheme = currTheme.value)
+			// TODO: Need to actually change the application theme
+		}
 
-		if(newKeyboardLayout != getKeyboardLayout() && newKeyboardLayout in availableKeyboardLayouts)
-			setKeyboardLayout(newKeyboardLayout)
+		if(currKeyboardLayout.value != settings.getKeyboardLayout())
+			settings.setKeyboardLayout(newKeyboardLayout = currKeyboardLayout.value)
 
-		if(newSymbolSet != getSymbolsSet() && newSymbolSet in availableSymbolSet)
-			setSymbolsSet(newSymbolSet)
+		if(currSymbolsSet.value != settings.getSymbolsSet())
+			settings.setSymbolsSet(newSymbolsSet = currSymbolsSet.value)
+
+		hasSomethingChanged.value = false
 	}
 
 
-	fun startTutorial()
+	// SettingsViewModel factory
+	companion object
 	{
-		// TODO: Start the tutorial (Uncomment when the tutorial screen is implemented)
-		//navigationCntrl.navigate(route = NineScreen.Game.name)			// Switch to tutorial screen
+		val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory
+		{
+			@Suppress("UNCHECKED_CAST")
+			override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T
+			{
+				val application = checkNotNull(extras[APPLICATION_KEY])			// Get the application object form extras
+				val savedStateHandle = extras.createSavedStateHandle()			// Create a SavedStateHandle for this ViewModel from extras
+
+				return SettingsViewModel(appResources = application.resources,
+					settings = GameSettings.getInstance(application.applicationContext),
+					settingsRepo = SettingsRepository.getInstance(application.applicationContext)) as T
+			}
+		}
 	}
 }

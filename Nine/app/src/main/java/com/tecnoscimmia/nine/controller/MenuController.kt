@@ -1,67 +1,82 @@
 package com.tecnoscimmia.nine.controller
 
-import android.content.Context
-import androidx.navigation.NavHostController
-import com.tecnoscimmia.nine.MainActivity
+import android.content.res.Resources
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.CreationExtras
 import com.tecnoscimmia.nine.R
 import com.tecnoscimmia.nine.model.GameSettings
-import com.tecnoscimmia.nine.view.NineScreen
+import com.tecnoscimmia.nine.model.SettingsRepository
 
 /*
-* This file defines the controller for the menu screen
+* This file defines the view-model for the menu screen
 */
 
-class MenuController(val navigationCntrl: NavHostController, val settings: GameSettings, val appCntxt: Context)
+
+//https://developer.android.com/codelabs/basic-android-kotlin-training-viewmodel#4
+class MenuViewModel(private val appResources: Resources, private val settings: GameSettings, private val settingsRepo: SettingsRepository) : ViewModel()
 {
-	// Load the available game modes from the resource file
-	val availableGameModes = listOf(
-		appCntxt.resources.getString(R.string.settings_game_mode_training),
-		appCntxt.resources.getString(R.string.settings_game_mode_challenge)
-		)
+	var gameModeIndex = mutableStateOf(0)                    // Current game mode selected in the game mode selector
 
 
-	// This function converts the internal representation of the game mode value to the UI one
-	fun getGameMode() : String
+	// Returns the name of the game mode currently selected
+	fun getGameMode(): String
 	{
-		return when(settings.getGameMode())
+		return settingsRepo.getAvailableGameModes()[gameModeIndex.value]
+	}
+
+
+	// Converts the UI representation of the game mode to the internal one and set's the new game mode in game settings class
+	fun setGameMode(newMode: String)
+	{
+		when(newMode)
 		{
-			GameSettings.GameModeSetting.TRAINING_GAME_MODE -> appCntxt.getString(R.string.settings_game_mode_challenge)
-			GameSettings.GameModeSetting.CHALLENGE_GAME_MODE -> appCntxt.getString(R.string.settings_game_mode_challenge)
+			appResources.getString(R.string.settings_game_mode_training) -> settings.setGameMode(GameSettings.GameModeSetting.TRAINING_GAME_MODE)
+			appResources.getString(R.string.settings_game_mode_challenge) -> settings.setGameMode(GameSettings.GameModeSetting.CHALLENGE_GAME_MODE)
 		}
 	}
 
 
-	// Changes the value of the game mode setting
-	fun setGameMode(newGameMode: String)
+	// Decrements the gameModeIndex and changes the selected game mode (if possible)
+	fun setPrevGameMode()
 	{
-		val newGameMode = when (newGameMode)					// Convert given string to the internal representation that game settings class uses
+		if (gameModeIndex.value > 0)
 		{
-			appCntxt.getString(R.string.settings_game_mode_challenge) -> GameSettings.GameModeSetting.CHALLENGE_GAME_MODE
-			appCntxt.getString(R.string.settings_game_mode_challenge) -> GameSettings.GameModeSetting.CHALLENGE_GAME_MODE
-			else -> return
+			gameModeIndex.value--
+			setGameMode(settingsRepo.getAvailableGameModes()[gameModeIndex.value])
 		}
-
-		settings.setGameMode(newGameMode)
 	}
 
 
-	// Navigate to the settings screen
-	fun switchToSettingsScreen()
+	// Increments the gameModeIndex and changes the selected game mode (if possible)
+	fun setNextGameMode()
 	{
-		navigationCntrl.navigate(route = NineScreen.Settings.name)		// Switch to settings screen
+		if (gameModeIndex.value < (settingsRepo.getAvailableGameModes().size - 1))
+		{
+			gameModeIndex.value++
+			setGameMode(settingsRepo.getAvailableGameModes()[gameModeIndex.value])
+		}
 	}
 
 
-	// Navigate to the scoreboard screen
-	fun switchToScoreboardScreen()
+	// MenuViewModel factory
+	companion object
 	{
-		navigationCntrl.navigate(route = NineScreen.Scoreboard.name)	// Switch to scoreboard screen
-	}
+		val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory
+		{
+			@Suppress("UNCHECKED_CAST")
+			override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T
+			{
+				val application = checkNotNull(extras[APPLICATION_KEY])			// Get the application object form extras
+				val savedStateHandle = extras.createSavedStateHandle()			// Create a SavedStateHandle for this ViewModel from extras
 
-
-	// Navigate to the game screen, no need to pass the game mode because that is stored in the game settings class
-	fun startNewGame(i: Int)
-	{
-		navigationCntrl.navigate(route = NineScreen.Game.name)			// Switch to game screen
+				return MenuViewModel(appResources = application.resources,
+					settings = GameSettings.getInstance(application.applicationContext),
+					settingsRepo = SettingsRepository.getInstance(application.applicationContext)) as T
+			}
+		}
 	}
 }
