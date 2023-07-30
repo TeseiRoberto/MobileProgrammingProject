@@ -22,6 +22,7 @@ import com.tecnoscimmia.nine.controller.MenuViewModel
 import com.tecnoscimmia.nine.controller.ScoreboardViewModel
 import com.tecnoscimmia.nine.controller.SettingsViewModel
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
+import com.tecnoscimmia.nine.view.widgets.GameInfoPanel
 import com.tecnoscimmia.nine.view.widgets.GameModeSelector
 import com.tecnoscimmia.nine.view.widgets.GameStarter
 import com.tecnoscimmia.nine.view.widgets.GoBackButton
@@ -160,6 +161,7 @@ fun GameScreen(navigationCntrl: NavHostController, gameVM: GameViewModel, isLand
 {
 	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
+		GameInfoPanel(isLandscape = isLandscape, time = gameVM.getTime(), attempts = gameVM.getAttemptsNum())
 		InputRow(userInput = gameVM.getUserInput(), currIndex = gameVM.getSelectedIndex())
 
 		Keyboard(isLandscape = isLandscape, symbolSet = gameVM.getSymbolsSet(), keyboardLayout = gameVM.getKeyboardLayout(),
@@ -170,6 +172,7 @@ fun GameScreen(navigationCntrl: NavHostController, gameVM: GameViewModel, isLand
 		{
 			Button(onClick = gameVM::selectPrevSymbol, content = { Text(text = "MOVE BACK") })
 			Button(onClick = gameVM::selectNextSymbol, content = { Text(text = "MOVE FORWARD") })
+			Button(onClick = gameVM::evaluate, content = { Text(text = "EVALUATE") })
 		}
 
 		GoBackButton(navigationCntrl) // TODO: Remove this button

@@ -14,17 +14,24 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tecnoscimmia.nine.model.GameSettings
 import com.tecnoscimmia.nine.model.Symbol
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
+import com.tecnoscimmia.nine.ui.theme.NineIconStyle
 import com.tecnoscimmia.nine.ui.theme.NineTextStyle
 
 /*
@@ -40,13 +47,14 @@ fun SymbolButton(width: Dp, height: Dp, symbol: String, backgroundColor: Color =
 	val modifier = Modifier
 		.size(width = width, height = height)
 		.background(color = backgroundColor)
-		.border(border = BorderStroke(width = if(isSelected) 3.dp else 1.dp, color = borderColor), shape = RoundedCornerShape(
-			NineButtonStyle.cornerRadius)
+		.border(
+			border = BorderStroke(width = if (isSelected) 3.dp else 1.dp, color = borderColor),
+			shape = RoundedCornerShape(
+				NineButtonStyle.cornerRadius
+			)
 		)
 
-	Button(modifier = modifier, onClick = { onClick(symbol) }, shape = RoundedCornerShape(
-		NineButtonStyle.cornerRadius)
-	)
+	Button(modifier = modifier, onClick = { onClick(symbol) }, shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
 	{
 		Text(text = symbol, textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
 			fontSize = NineTextStyle.title.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
@@ -74,8 +82,7 @@ fun Keyboard(isLandscape: Boolean, symbolSet: Array<Symbol>, keyboardLayout: Gam
 		var i = 0
 		while(i < symbolSet.size)
 		{
-			Row(modifier = Modifier.fillMaxWidth().padding(vertical = buttonsPadding),
-				horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.Top)
+			Row(modifier = Modifier.fillMaxWidth().padding(vertical = buttonsPadding), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.Top)
 			{
 				var j = 0
 				while(j < numOfCols && i < symbolSet.size)
@@ -89,71 +96,41 @@ fun Keyboard(isLandscape: Boolean, symbolSet: Array<Symbol>, keyboardLayout: Gam
 	}
 }
 
-/*
-// A panel that shows the timer and number of attempts
+
+// A panel that shows the timer and the number of attempts
 @Composable
 fun GameInfoPanel(isLandscape: Boolean, time: String, attempts: UInt)
 {
-	// TODO: Make this shit work...
-	val timerWidget = @Composable {
-		Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically)
-		{
-			Icon(modifier = Modifier.size(width = NineIconStyle.veryShortWidth, height = NineIconStyle.veryShortHeight),
-				painter = painterResource(NineIconStyle.hourglass), contentDescription = null)
-
-			Text(text = time, fontWeight = NineTextStyle.subTitle.fontWeight, fontSize = NineTextStyle.subTitle.fontSize,
-					fontFamily = NineTextStyle.subTitle.fontFamily)
-		}
-	}
-
-	val attemptsWidget = @Composable {
-		Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically)
-		{
-			Text(text = "Attempts: $attempts", fontWeight = NineTextStyle.subTitle.fontWeight, fontSize = NineTextStyle.subTitle.fontSize,
-				fontFamily = NineTextStyle.subTitle.fontFamily)
-		}
-	}
-
-
-	Row(modifier = Modifier.fillMaxWidth(),
-		horizontalArrangement = if(isLandscape) Arrangement.SpaceBetween else Arrangement.SpaceAround,
-		verticalAlignment = Alignment.CenterVertically)
+	Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
 	{
-		if(isLandscape)
+		Card(modifier = Modifier.fillMaxWidth().padding(horizontal = if(isLandscape) 128.dp else 32.dp),
+			shape = RoundedCornerShape(bottomStart = NineButtonStyle.cornerRadius, bottomEnd = NineButtonStyle.cornerRadius))
 		{
-			Surface(modifier = Modifier.fillMaxWidth().weight(0.5f),
-				border = BorderStroke(width = 1.dp, color = Color.Black),
-				shape = RoundedCornerShape(bottomEnd = NineButtonStyle.cornerRadius),
-				content = { timerWidget() })
+			Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
+			{
+				Icon(painter = painterResource(NineIconStyle.hourglass), contentDescription = null,
+					modifier = Modifier.size(width = NineIconStyle.veryShortWidth, height = NineIconStyle.veryShortHeight))
 
-			Surface(modifier = Modifier.fillMaxWidth().weight(0.5f),
-				border = BorderStroke(width = 1.dp, color = Color.Black),
-				shape = RoundedCornerShape(bottomStart = NineButtonStyle.cornerRadius),
-				content = { attemptsWidget() })
+				Text(text = time, fontFamily = NineTextStyle.subTitle.fontFamily, fontSize = NineTextStyle.subTitle.fontSize,
+					fontWeight = NineTextStyle.subTitle.fontWeight)
 
-		} else {
-			Surface(
-				border = BorderStroke(width = 1.dp, color = Color.Black),
-				shape = RoundedCornerShape(bottomStart = NineButtonStyle.cornerRadius),
-				content = {
-					timerWidget()
-					attemptsWidget()
-				}
-			)
+				Text(text = "Attempts: $attempts", fontFamily = NineTextStyle.subTitle.fontFamily,
+					fontSize = NineTextStyle.subTitle.fontSize, fontWeight = NineTextStyle.subTitle.fontWeight)
+			}
 		}
 	}
-}*/
+}
 
 
 // A row that shows the symbols currently inserted by the user, this widget splits the user input string in 3 sides
 // according to the given currIndex, in particular we have the left side [0, currIndex - 1], the selected char
 // which is userInput[currIndex] and the right side [currIndex + 1, userInput.length - 1]
 @Composable
-fun InputRow(userInput: Array<Symbol>, currIndex: Int)
+fun InputRow(userInput: SnapshotStateList<Symbol>, currIndex: Int)
 {
 	Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically)
 	{
-		Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp))
+		Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 36.dp))
 		{
 			Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
 			{
