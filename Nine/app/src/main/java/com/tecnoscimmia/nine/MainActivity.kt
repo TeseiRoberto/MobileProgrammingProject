@@ -2,7 +2,6 @@ package com.tecnoscimmia.nine
 
 import android.content.res.Configuration
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -10,16 +9,16 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.tecnoscimmia.nine.controller.GameViewModel
-import com.tecnoscimmia.nine.controller.MenuViewModel
-import com.tecnoscimmia.nine.controller.ScoreboardViewModel
-import com.tecnoscimmia.nine.controller.SettingsViewModel
 import com.tecnoscimmia.nine.ui.theme.NineTheme
 import com.tecnoscimmia.nine.view.GameScreen
 import com.tecnoscimmia.nine.view.MenuScreen
 import com.tecnoscimmia.nine.view.NineScreen
 import com.tecnoscimmia.nine.view.ScoreboardScreen
 import com.tecnoscimmia.nine.view.SettingsScreen
+import com.tecnoscimmia.nine.viewModel.GameViewModel
+import com.tecnoscimmia.nine.viewModel.MenuViewModel
+import com.tecnoscimmia.nine.viewModel.ScoreboardViewModel
+import com.tecnoscimmia.nine.viewModel.SettingsViewModel
 
 
 /*

@@ -1,4 +1,4 @@
-package com.tecnoscimmia.nine.controller
+package com.tecnoscimmia.nine.viewModel
 
 import android.content.res.Resources
 import androidx.compose.runtime.mutableStateOf

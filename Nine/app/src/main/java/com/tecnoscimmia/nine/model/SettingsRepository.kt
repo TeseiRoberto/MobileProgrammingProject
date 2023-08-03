@@ -18,7 +18,7 @@ class SettingsRepository private constructor()
 		private var availableKeyboardLayouts: 	List<String>? = null	// List of all the available keyboard layouts for the game keyboard
 		private var availableSymbolsSets: 		List<String>? = null	// List of all the available symbols sets
 		private var availableGameModes: 		List<String>? = null	// List of all the game modes in which the game can be played in
-
+		private var availableDebugModes:		List<String>? = null	// List of all the possible values for the debug mode setting
 
 		fun getInstance(appCntxt: Context) : SettingsRepository
 		{
@@ -52,6 +52,12 @@ class SettingsRepository private constructor()
 				appCntxt.resources.getString(R.string.settings_game_mode_challenge)
 			)
 
+			// Load available values for the debug mode
+			availableDebugModes = listOf(
+				appCntxt.getString(R.string.settings_debug_mode_active),
+				appCntxt.getString(R.string.settings_debug_mode_inactive),
+			)
+
 			return instance!!
 		}
 	}
@@ -62,4 +68,5 @@ class SettingsRepository private constructor()
 	fun getAvailableKeyboardLayouts() 	: List<String> 		{ return availableKeyboardLayouts!! }
 	fun getAvailableSymbolsSets() 		: List<String> 		{ return availableSymbolsSets!! }
 	fun getAvailableGameModes() 		: List<String> 		{ return availableGameModes!! }
+	fun getAvailableDebugModes()		: List<String>		{ return availableDebugModes!! }
 }

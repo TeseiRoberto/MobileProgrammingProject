@@ -33,8 +33,8 @@ class NineButtonStyle
 	{
 		val longWidth		= 96.dp
 		val longHeight		= 96.dp
-		val normalWidth		= 64.dp
-		val normalHeight 	= 64.dp
+		val normalWidth		= 74.dp
+		val normalHeight 	= 74.dp
 		val borderWidth 	= 1.dp
 
 		val cornerRadius	= 12.dp

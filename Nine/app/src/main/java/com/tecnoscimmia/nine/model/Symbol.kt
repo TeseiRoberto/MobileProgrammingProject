@@ -15,7 +15,7 @@ import com.tecnoscimmia.nine.R
  */
 
 
-class Symbol(val value: String = "")
+class Symbol(var value: String = "")
 {
 
 	companion object
@@ -62,19 +62,18 @@ class Symbol(val value: String = "")
 		}
 
 
-		// Generate an array of symbols classes, the elements of the array are chosen randomly from the complete
-		// symbols set
+		// Generate an array of symbols classes, the elements of the array are chosen randomly from the complete symbols set
 		fun generateSymbolsSubset(appResources: Resources, symbolsSetType: GameSettings.SymbolsSetSetting) : Array<Symbol>
 		{
 			val result = mutableListOf<Symbol>()
 			val completeSet = loadSymbolsSet(appResources, symbolsSetType)
 
 			// If current symbols set has less elements than what we need then we return it directly (we cannot choose a subset of elements)
-			if(completeSet.size <= GameSettings.DIGITS_NUM)
+			if(completeSet.size <= GameSettings.MAX_DIGITS_NUM)
 				return completeSet
 
 			// Otherwise we need to choose a certain number of symbols from the complete set randomly
-			for(i in 0 until GameSettings.DIGITS_NUM)
+			for(i in 0 until GameSettings.MAX_DIGITS_NUM)
 			{
 				var j = (completeSet.indices).random()					// Get a random index
 				while(completeSet[j] in result)							// Loop until we find an element that we have not already choose

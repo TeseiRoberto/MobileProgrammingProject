@@ -26,7 +26,7 @@ class GameSettings private constructor(private val preferencesFile: SharedPrefer
 	private var gameMode:				GameModeSetting = GameModeSetting.TRAINING_GAME_MODE					// Mode in which the game will be played
 	private var symbolsSet:				SymbolsSetSetting = SymbolsSetSetting.NUMBERS_SYMBOLS_SET				// Set of symbols used in the game (a symbols set is just a string that contains comma separated strings)
 	private var showTutorial: 			Boolean = false															// Indicates if tutorial will be shown on app start up
-
+	private var debugMode:				Boolean = false															// Indicates if the application is running in debug mode
 
 	// Getter methods
 	fun getTheme() : 					ThemeSetting 			{ return theme }
@@ -34,6 +34,7 @@ class GameSettings private constructor(private val preferencesFile: SharedPrefer
 	fun getGameMode():					GameModeSetting			{ return gameMode }
 	fun getSymbolsSet():				SymbolsSetSetting		{ return symbolsSet }
 	fun needToShowTutorial():			Boolean 				{ return showTutorial }
+	fun isDebugModeActive():			Boolean					{ return debugMode }
 
 
 	// Changes the theme and save the new one in the preferences file
@@ -59,12 +60,22 @@ class GameSettings private constructor(private val preferencesFile: SharedPrefer
 	}
 
 
+
 	// Set which set of symbols will be used in the game and save it in the preferences file
 	fun setSymbolsSet(newSymbolsSet: SymbolsSetSetting)
 	{
 		symbolsSet = newSymbolsSet
 		preferencesFile.edit().putString(symbolsSetPreferencesKey, newSymbolsSet.name).apply()
 	}
+
+
+	// Changes the debug mode setting and save the new one in the preferences file
+	fun setDebugMode(newMode: Boolean)
+	{
+		debugMode = newMode
+		preferencesFile.edit().putBoolean(debugModePreferencesKey, newMode).apply()
+	}
+
 
 
 	// Loads values for the settings from the preferences file
@@ -82,11 +93,15 @@ class GameSettings private constructor(private val preferencesFile: SharedPrefer
 			symbolsSet = SymbolsSetSetting.valueOf(
 				preferencesFile.getString(symbolsSetPreferencesKey, SymbolsSetSetting.NUMBERS_SYMBOLS_SET.name) as String )
 
+			debugMode = preferencesFile.getBoolean(debugModePreferencesKey, false)
+
+
 		} else {
 			// Otherwise we set default values and we save those in the preferences file
 			theme 			= ThemeSetting.LIGHT_THEME
 			keyboardLayout 	= KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT
 			symbolsSet		= SymbolsSetSetting.NUMBERS_SYMBOLS_SET
+			debugMode		= false
 
 			// If settings were not saved then this may be the first time the app is started, so we need to show the tutorial
 			showTutorial 	= true
@@ -95,6 +110,7 @@ class GameSettings private constructor(private val preferencesFile: SharedPrefer
 			edit.putString(themePreferencesKey, theme.name)
 			edit.putString(keyboardLayoutPreferencesKey, keyboardLayout.name)
 			edit.putString(symbolsSetPreferencesKey, symbolsSet.name)
+			edit.putBoolean(debugModePreferencesKey, debugMode)
 			edit.apply()
 		}
 	}
@@ -103,12 +119,13 @@ class GameSettings private constructor(private val preferencesFile: SharedPrefer
 	{
 		private var instance: 	GameSettings? = null				// The singleton instance
 
-		const val DIGITS_NUM = 9									// Number of digits used to create the secret key
+		const val MAX_DIGITS_NUM = 9								// Number of digits used to create the secret key
 
 		// Keys used to save data in the preferences file (those are loaded when get instance is called for the first time)
 		private var themePreferencesKey 			= ""
 		private var keyboardLayoutPreferencesKey	= ""
 		private var symbolsSetPreferencesKey		= ""
+		private var debugModePreferencesKey			= ""
 
 
 		fun getInstance(appCntxt: Context) : GameSettings
@@ -123,6 +140,7 @@ class GameSettings private constructor(private val preferencesFile: SharedPrefer
 			themePreferencesKey 			= appCntxt.resources.getString(R.string.settings_theme_key)
 			keyboardLayoutPreferencesKey 	= appCntxt.resources.getString(R.string.settings_keyboard_layout_key)
 			symbolsSetPreferencesKey		= appCntxt.resources.getString(R.string.settings_symbols_set_key)
+			debugModePreferencesKey 		= appCntxt.getString(R.string.settings_debug_mode_key)
 
 			instance = GameSettings(preferencesFile)				// Instantiate singleton
 			instance!!.loadFromFile()								// Load settings from preferences file

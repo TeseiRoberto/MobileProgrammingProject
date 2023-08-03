@@ -34,11 +34,11 @@ fun SettingRow(settingName: String, availableValues: List<String>, currValue: St
 {
 	val isMenuExpanded = remember { mutableStateOf(false) }
 
-	Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
-		horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
+	Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
 	{
 		// Name of the setting
-		Text(text = settingName, modifier = Modifier.weight(0.5f), textAlign = TextAlign.Center,
+		Text(modifier = Modifier.padding(start = 14.dp).weight(0.5f),
+			text = settingName, textAlign = TextAlign.Center,
 			fontWeight = NineTextStyle.subTitle.fontWeight, fontSize = NineTextStyle.subTitle.fontSize,
 			fontFamily = NineTextStyle.subTitle.fontFamily)
 
@@ -50,27 +50,27 @@ fun SettingRow(settingName: String, availableValues: List<String>, currValue: St
 			Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)
 			{
 				// Display the current value assigned to the setting
-				Text(text = currValue, textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
+				Text(modifier = Modifier.weight(0.8f),
+					text = currValue, textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
 					fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
 
 				// This icon signals to user that clicking on this button will enable a drop down menu
-				Icon(painter = painterResource(NineIconStyle.downArrowRound), contentDescription = null)
+				Icon(modifier = Modifier.weight(0.2f),
+					painter = painterResource(NineIconStyle.downArrowRound), contentDescription = null)
 
-			}
-
-			// The drop down menu that shows all the available values for this setting
-			DropdownMenu(expanded = isMenuExpanded.value, onDismissRequest = { isMenuExpanded.value = false} )
-			{
-				availableValues.forEach { value ->			// For each available value create an item in the drop down menu
-					DropdownMenuItem(text = { Text(text = value) },
-						onClick = {
-							isMenuExpanded.value = false	// Close the drop down menu
-							onSettingChange(value)			// Call the given callback with the selected setting
-						}
-					)
+				// The drop down menu that shows all the available values for this setting
+				DropdownMenu(expanded = isMenuExpanded.value, onDismissRequest = { isMenuExpanded.value = false} )
+				{
+					availableValues.forEach { value ->			// For each available value create an item in the drop down menu
+						DropdownMenuItem(text = { Text(text = value) },
+							onClick = {
+								isMenuExpanded.value = false	// Close the drop down menu
+								onSettingChange(value)			// Call the given callback with the selected setting
+							}
+						)
+					}
 				}
 			}
-
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package com.tecnoscimmia.nine.controller
+package com.tecnoscimmia.nine.viewModel
 
 import android.content.res.Resources
 import androidx.compose.runtime.mutableStateOf
@@ -21,13 +21,25 @@ import com.tecnoscimmia.nine.model.Symbol
 class GameViewModel(private val appResources: Resources, private val settings: GameSettings,
 						private val resultRepo: MatchResultRepository) : ViewModel()
 {
-	private var currMatch : Match								// Data about the current match that is being played by the user
-	private var selectedIndex = mutableStateOf(0)			// Index in which we will place the next symbol inserted by the user
+	// Data about the current match that is being played by the user
+	private var currMatch 			= Match(symbolsSet = Symbol.generateSymbolsSubset(appResources = appResources, symbolsSetType = settings.getSymbolsSet()))
+
+	private var selectedIndex 		= mutableStateOf(0)		// Index in which we will place the next symbol inserted by the user
+	private var insertedSymbolsNum 	= 0								// Keeps track of how many symbols has been inserted by the user (to avoid a premature evaluation of the user key)
+	private var differenceStr 		= mutableStateOf("")		// This string indicates the distances between the elements of secretKey and userKey
 
 
 	init {
-		currMatch = Match(symbolsSet = Symbol.generateSymbolsSubset(appResources = appResources, symbolsSetType = settings.getSymbolsSet()))
-		startNewMatch()
+		currMatch.generateSecretKey()
+	}
+
+	fun getSecretKey() : String // TODO: Remove this function is just to test the evaluate method
+	{
+		var secretKey = ""
+		for(symbol in currMatch.getSecretKey())
+			secretKey += symbol.value
+
+		return secretKey
 	}
 
 
@@ -36,13 +48,18 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 	fun getSymbolsSet() : 		Array<Symbol>						{ return currMatch.getSymbolsSet() }
 	fun getSelectedIndex() : 	Int									{ return selectedIndex.value}
 	fun getUserInput() : 		SnapshotStateList<Symbol>			{ return currMatch.getUserKey() }
+	fun getDifferenceString() : String								{ return differenceStr.value }
 	fun getTime() : 			String								{ return "XX:XX" /* TODO: Add implementation*/ }
 	fun getAttemptsNum() : 		UInt								{ return currMatch.getAttempts() }
+	fun isDebugModeActive() : 	Boolean								{ return settings.isDebugModeActive() }
 
 	// Moves forward the selectedIndex (if possible)
 	fun selectNextSymbol()
 	{
-		if(selectedIndex.value + 1 < currMatch.getUserKey().size)
+		val userKey = currMatch.getUserKey()
+
+		// We can select the next symbol only if we are not going out of array bounds and the current symbol is not empty
+		if(selectedIndex.value + 1 < userKey.size && userKey[selectedIndex.value].value.isNotEmpty())
 			selectedIndex.value++
 	}
 
@@ -58,22 +75,28 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 	// Inserts the given symbols in the user key and increments the selected index (if possible)
 	fun insertSymbol(symbol: String)
 	{
+		if(insertedSymbolsNum < GameSettings.MAX_DIGITS_NUM && selectedIndex.value == insertedSymbolsNum)
+			insertedSymbolsNum++
+
 		currMatch.insertSymbol(symbol = symbol, index = selectedIndex.value)
 		selectNextSymbol()
 	}
 
+
 	fun evaluate()
 	{
-		currMatch.evaluate()
+		if(insertedSymbolsNum >= GameSettings.MAX_DIGITS_NUM)
+			differenceStr.value = currMatch.evaluate()
 	}
 
-	// Resets currMatch data to create a new match
+
+	// Creates a new match and resets the properties of the view model that are related to the old match
 	fun startNewMatch()
 	{
-		// Create a new match
 		currMatch = Match(symbolsSet = Symbol.generateSymbolsSubset(appResources = appResources, symbolsSetType = settings.getSymbolsSet()))
 		currMatch.generateSecretKey()
 		selectedIndex.value = 0
+		insertedSymbolsNum = 0
 	}
 
 

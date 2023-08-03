@@ -139,8 +139,6 @@ fun GameModeSelector(currGameMode: String, onLeftArrowClick: () -> Unit, onRight
 @Composable
 fun GameStarter(width: Dp, height: Dp, onSwipe: () -> Unit, swipeThreshold: Float, maxIconScale: Float)
 {
-	val c = LocalContext.current // TODO: To be removed, only for debug!!!
-
 	val currScale = remember { mutableStateOf(1f) }				// Value used to scale on the Y axis the image
 	val currSwipeAmount = remember { mutableStateOf(0f) }			// Value changed when the user swipes in the box
 
@@ -164,10 +162,7 @@ fun GameStarter(width: Dp, height: Dp, onSwipe: () -> Unit, swipeThreshold: Floa
 
 				onDragEnd = {                                            // Executed when the drag is over
 					if (currSwipeAmount.value < swipeThreshold)          // If the swipe made by the user is "long enough"
-					{
 						onSwipe()                                        // Then call the callback function
-						Toast.makeText(c, "currSwipeAmount >= maxSwipeAmount", Toast.LENGTH_SHORT).show()
-					}
 
 					currScale.value = 1f                                // Reset all values
 					currSwipeAmount.value = 0f

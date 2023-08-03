@@ -1,4 +1,4 @@
-package com.tecnoscimmia.nine.controller
+package com.tecnoscimmia.nine.viewModel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel

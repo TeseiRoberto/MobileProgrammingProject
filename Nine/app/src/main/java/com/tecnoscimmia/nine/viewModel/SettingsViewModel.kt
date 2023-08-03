@@ -1,4 +1,4 @@
-package com.tecnoscimmia.nine.controller
+package com.tecnoscimmia.nine.viewModel
 
 import android.content.res.Resources
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +21,7 @@ class SettingsViewModel(private val appResources: Resources, private val setting
 	private var currTheme 			= mutableStateOf(settings.getTheme())
 	private var currKeyboardLayout	= mutableStateOf(settings.getKeyboardLayout())
 	private var currSymbolsSet		= mutableStateOf(settings.getSymbolsSet())
+	private var currDebugMode		= mutableStateOf(settings.isDebugModeActive())
 	private var hasSomethingChanged = mutableStateOf(false)
 
 
@@ -28,6 +29,7 @@ class SettingsViewModel(private val appResources: Resources, private val setting
 	fun getAvailableThemes() : 			List<String> { return settingsRepo.getAvailableThemes() }
 	fun getAvailableKeyboardLayouts() : List<String> { return settingsRepo.getAvailableKeyboardLayouts() }
 	fun getAvailableSymbolsSets() : 	List<String> { return settingsRepo.getAvailableSymbolsSets() }
+	fun getAvailableDebugModes() : 		List<String> { return settingsRepo.getAvailableDebugModes() }
 
 	fun hasSomethingChanged() : 		Boolean { return hasSomethingChanged.value }
 
@@ -62,6 +64,17 @@ class SettingsViewModel(private val appResources: Resources, private val setting
 			GameSettings.SymbolsSetSetting.NUMBERS_SYMBOLS_SET -> appResources.getString(R.string.settings_symbols_set_numbers)
 			GameSettings.SymbolsSetSetting.LETTERS_SYMBOLS_SET -> appResources.getString(R.string.settings_symbols_set_letters)
 			GameSettings.SymbolsSetSetting.EMOTICONS_SYMBOLS_SET -> appResources.getString(R.string.settings_symbols_set_emoticons)
+		}
+	}
+
+
+	// Converts the internal representation of the debug mode value to the UI one
+	fun getDebugMode() : String
+	{
+		return when(currDebugMode.value)
+		{
+			false -> appResources.getString(R.string.settings_debug_mode_inactive)
+			true -> appResources.getString(R.string.settings_debug_mode_active)
 		}
 	}
 
@@ -112,6 +125,21 @@ class SettingsViewModel(private val appResources: Resources, private val setting
 	}
 
 
+	// Converts the UI representation of the debug mode value to the internal one
+	fun setDebugMode(newDebugMode: String)
+	{
+		val newInternalDebugMode = when(newDebugMode)
+		{
+			appResources.getString(R.string.settings_debug_mode_inactive) -> false
+			appResources.getString(R.string.settings_debug_mode_active) -> true
+			else -> return
+		}
+
+		currDebugMode.value = newInternalDebugMode
+		hasSomethingChanged.value = true
+	}
+
+
 	// Apply changes to the game settings class
 	fun saveChangesToSettings()
 	{
@@ -126,6 +154,9 @@ class SettingsViewModel(private val appResources: Resources, private val setting
 
 		if(currSymbolsSet.value != settings.getSymbolsSet())
 			settings.setSymbolsSet(newSymbolsSet = currSymbolsSet.value)
+
+		if(currDebugMode.value != settings.isDebugModeActive())
+			settings.setDebugMode(currDebugMode.value)
 
 		hasSomethingChanged.value = false
 	}

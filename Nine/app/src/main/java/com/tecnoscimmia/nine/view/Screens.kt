@@ -17,22 +17,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.tecnoscimmia.nine.R
-import com.tecnoscimmia.nine.controller.GameViewModel
-import com.tecnoscimmia.nine.controller.MenuViewModel
-import com.tecnoscimmia.nine.controller.ScoreboardViewModel
-import com.tecnoscimmia.nine.controller.SettingsViewModel
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
+import com.tecnoscimmia.nine.view.widgets.GameControlPanel
 import com.tecnoscimmia.nine.view.widgets.GameInfoPanel
 import com.tecnoscimmia.nine.view.widgets.GameModeSelector
 import com.tecnoscimmia.nine.view.widgets.GameStarter
 import com.tecnoscimmia.nine.view.widgets.GoBackButton
 import com.tecnoscimmia.nine.view.widgets.InputRow
-import com.tecnoscimmia.nine.view.widgets.Keyboard
 import com.tecnoscimmia.nine.view.widgets.MenuPanelLandscape
 import com.tecnoscimmia.nine.view.widgets.MenuPanelPortrait
 import com.tecnoscimmia.nine.view.widgets.Scoreboard
 import com.tecnoscimmia.nine.view.widgets.ScreenTitle
 import com.tecnoscimmia.nine.view.widgets.SettingRow
+import com.tecnoscimmia.nine.viewModel.GameViewModel
+import com.tecnoscimmia.nine.viewModel.MenuViewModel
+import com.tecnoscimmia.nine.viewModel.ScoreboardViewModel
+import com.tecnoscimmia.nine.viewModel.SettingsViewModel
 
 
 /*
@@ -112,6 +112,12 @@ fun SettingsScreen(navigationCntrl: NavHostController, settingsVM: SettingsViewM
 			currValue = settingsVM.getKeyboardLayout(),
 			onSettingChange = settingsVM::setKeyboardLayout
 		)
+
+		SettingRow(settingName = stringResource(id = R.string.settings_debug_mode),	// Setting to change the debug mode
+			availableValues = settingsVM.getAvailableDebugModes(),
+			currValue = settingsVM.getDebugMode(),
+			onSettingChange = settingsVM::setDebugMode
+		)
 	}
 
 	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
@@ -162,20 +168,15 @@ fun GameScreen(navigationCntrl: NavHostController, gameVM: GameViewModel, isLand
 	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
 		GameInfoPanel(isLandscape = isLandscape, time = gameVM.getTime(), attempts = gameVM.getAttemptsNum())
-		InputRow(userInput = gameVM.getUserInput(), currIndex = gameVM.getSelectedIndex())
+		InputRow(userInput = gameVM.getUserInput(), currIndex = gameVM.getSelectedIndex(), differencesStr = gameVM.getDifferenceString())
 
-		Keyboard(isLandscape = isLandscape, symbolSet = gameVM.getSymbolsSet(), keyboardLayout = gameVM.getKeyboardLayout(),
-			buttonsPadding = 6.dp, onBtnClick = { symbol -> gameVM.insertSymbol(symbol = symbol) })
-
-		// Debug buttons to test the InputRow widget
-		Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
-		{
-			Button(onClick = gameVM::selectPrevSymbol, content = { Text(text = "MOVE BACK") })
-			Button(onClick = gameVM::selectNextSymbol, content = { Text(text = "MOVE FORWARD") })
-			Button(onClick = gameVM::evaluate, content = { Text(text = "EVALUATE") })
-		}
+		// If the app is running in debug mode then we can show the secret key
+		if(gameVM.isDebugModeActive())
+			Text(text = "secret key is: ${gameVM.getSecretKey()}")
 
 		GoBackButton(navigationCntrl) // TODO: Remove this button
+
+		GameControlPanel(isLandscape = isLandscape, gameVM = gameVM)
 	}
 }
 
