@@ -1,6 +1,5 @@
 package com.tecnoscimmia.nine.model
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -14,31 +13,59 @@ import kotlin.math.absoluteValue
 class Match(private val symbolsSet: Array<Symbol>)
 {
 	private var secretKey: 			Array<Symbol>							// Permutation of symbols generated randomly by the game
-	private var userKey 			= mutableStateListOf<Symbol>()			// Permutation inserted by the user
-	private var isPaused			= mutableStateOf(false)
-	private var attemptsNum			= mutableStateOf(0u)				// Total Number of attempts
+	private val userKey 			= mutableStateListOf<Symbol>()			// Permutation inserted by the user
+	private val attemptsNum			= mutableStateOf(0u)				// Total Number of attempts
 
 
 	init {
-		secretKey = Array(size = 9, init = { Symbol(value = "") } )			// Fill secret key array with default values
-
-		for(i in 0 until GameSettings.MAX_DIGITS_NUM)					// Fill user key array with default values
-			userKey.add(Symbol(value = ""))
+		// Fill secret key array with default values
+		secretKey = Array(size = GameSettings.MAX_DIGITS_NUM, init = { Symbol(value = "") } )
 	}
 
 
-	// Returns the symbols set used for this match
-	fun getSymbolsSet() : 	Array<Symbol>				{ return symbolsSet }
+	// Getter methods
+	fun getSymbolsSet() : 	Array<Symbol>				{ return symbolsSet }			// Returns the symbols set used for this match
 	fun getAttempts() : 	UInt						{ return attemptsNum.value }
 	fun getUserKey() : 		SnapshotStateList<Symbol>	{ return userKey }
+	fun getSecretKey() : 	Array<Symbol> 				{ return secretKey }
 
-	fun getSecretKey() : Array<Symbol> { return secretKey } // TODO: Remove this function is just to test the evaluate method
 
 	// Inserts a new symbols in user key at the given index
 	fun insertSymbol(symbol: String, index: Int)
 	{
-		if(index < userKey.size)
-			userKey[index] = Symbol(value = symbol)
+		// Check that given index is not out of bounds (we limit the dimension of user key between the range [0, MAX_DIGITS_NUM) )
+		if(index < 0 || index >= GameSettings.MAX_DIGITS_NUM)
+			return
+
+		var swapIndex = -1
+		for(i in userKey.indices)							// Check if the given symbol has already been inserted
+		{
+			if(userKey[i].value == symbol)					// If it has then we need to swap it from the old position to the new one
+			{
+				swapIndex = i
+				break
+			}
+		}
+
+		if(index >= userKey.size)							// If we are inserting a new element
+		{
+			if(swapIndex != -1)
+			{
+				userKey[swapIndex] = Symbol(value = "")
+				userKey.add(Symbol(value = symbol))
+			} else {
+				userKey.add(Symbol(value = symbol))
+			}
+
+		} else {											// If we are inserting into an existing element
+			if(swapIndex != -1)
+			{
+				userKey[swapIndex] = Symbol(value = userKey[index].value)
+				userKey[index] = Symbol(value = symbol)
+			} else {
+				userKey[index] = Symbol(value = symbol)
+			}
+		}
 	}
 
 
@@ -48,13 +75,17 @@ class Match(private val symbolsSet: Array<Symbol>)
 		// TODO: This code for now simply sets the secret key using the same order of elements of the given symbol set, but we need to
 		// TODO: actually generate the secret key randomly!
 		for(i in secretKey.indices)
-			secretKey[i].value = symbolsSet[i].value
+			secretKey[i] =  Symbol(value = symbolsSet[i].value)
 	}
 
 
 	// Calculates the differences string comparing the content of userKey with the secret key and then returns it
 	fun evaluate() : String
 	{
+		// If the user key contains a number of elements that is not equal to the size of the secret key then we cannot evaluate
+		if(userKey.size != secretKey.size)
+			return ""
+
 		attemptsNum.value++
 		var differencesStr = ""
 

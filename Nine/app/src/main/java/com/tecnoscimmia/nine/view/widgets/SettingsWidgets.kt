@@ -43,7 +43,8 @@ fun SettingRow(settingName: String, availableValues: List<String>, currValue: St
 			fontFamily = NineTextStyle.subTitle.fontFamily)
 
 		// Button that enables the drop down menu so the user can choose another value for the setting
-		Button(modifier = Modifier.weight(0.5f), onClick = { isMenuExpanded.value = true },
+		Button(modifier = Modifier.padding(end = 14.dp).weight(0.5f),
+			onClick = { isMenuExpanded.value = true },
 			shape = RoundedCornerShape(NineButtonStyle.cornerRadius)
 		)
 		{
@@ -70,6 +71,7 @@ fun SettingRow(settingName: String, availableValues: List<String>, currValue: St
 						)
 					}
 				}
+
 			}
 		}
 	}

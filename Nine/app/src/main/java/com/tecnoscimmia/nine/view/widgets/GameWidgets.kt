@@ -8,8 +8,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,14 +25,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+import androidx.navigation.NavHostController
+import com.tecnoscimmia.nine.R
 import com.tecnoscimmia.nine.model.GameSettings
 import com.tecnoscimmia.nine.model.Symbol
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
 import com.tecnoscimmia.nine.ui.theme.NineIconStyle
 import com.tecnoscimmia.nine.ui.theme.NineTextStyle
+import com.tecnoscimmia.nine.view.NineScreen
 import com.tecnoscimmia.nine.viewModel.GameViewModel
 
 /*
@@ -41,7 +47,7 @@ import com.tecnoscimmia.nine.viewModel.GameViewModel
 
 // A button that contains a symbol, this is used to implement the Keyboard and the SymbolRow widgets
 @Composable
-fun SymbolButton(width: Dp, height: Dp, symbol: String, backgroundColor: Color = Color.White, borderColor: Color = Color.Black,
+fun SymbolButton(enabled: Boolean, width: Dp, height: Dp, symbol: String, backgroundColor: Color = Color.White, borderColor: Color = Color.Black,
 				 onClick: (String) -> Unit, isSelected: Boolean = false)
 {
 	val modifier = Modifier.size(width = width, height = height)
@@ -53,7 +59,7 @@ fun SymbolButton(width: Dp, height: Dp, symbol: String, backgroundColor: Color =
 			)
 		)
 
-	Button(modifier = modifier, onClick = { onClick(symbol) }, shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+	Button(modifier = modifier, enabled = enabled, onClick = { onClick(symbol) }, shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
 	{
 		Text(text = symbol, textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
 			fontSize = NineTextStyle.title.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
@@ -64,7 +70,7 @@ fun SymbolButton(width: Dp, height: Dp, symbol: String, backgroundColor: Color =
 // A collection of SymbolButtons placed accordingly to the given layout and the isLandscape value, when one of the buttons is
 // clicked the onBtnClick callback is called and the symbol associated to the clicked button is passed as parameter
 @Composable
-fun Keyboard(modifier: Modifier, isLandscape: Boolean, symbolSet: Array<Symbol>, keyboardLayout: GameSettings.KeyboardLayoutSetting,
+fun Keyboard(modifier: Modifier, isLandscape: Boolean, enabled: Boolean, symbolSet: Array<Symbol>, keyboardLayout: GameSettings.KeyboardLayoutSetting,
 			 buttonsPadding: Dp, onBtnClick: (String) -> Unit)
 {
 	// Choose the number of buttons to place on each line of the keyboard according to the given layout
@@ -86,7 +92,7 @@ fun Keyboard(modifier: Modifier, isLandscape: Boolean, symbolSet: Array<Symbol>,
 				var j = 0
 				while(j < numOfCols && i < symbolSet.size)
 				{
-					SymbolButton(width = 64.dp, height = 64.dp, symbol = symbolSet[i].value, onClick = onBtnClick)
+					SymbolButton(enabled = enabled, width = 64.dp, height = 64.dp, symbol = symbolSet[i].value, onClick = onBtnClick)
 					i++
 					j++
 				}
@@ -131,11 +137,15 @@ fun InputRow(userInput: SnapshotStateList<Symbol>, currIndex: Int, differencesSt
 	{
 		Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
 		{
-			for(i in userInput.indices)							// For each symbol in the user input
+			//for(i in userInput.indices)							// For each symbol in the user input
+			for(i in 0 until GameSettings.MAX_DIGITS_NUM)
 			{
 				Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center)
 				{
-					var text = userInput[i].value
+					var text = ""
+
+					if(i < userInput.size)
+						text = userInput[i].value
 
 					if(i < differencesStr.length)				// If a difference value is present for the current symbol
 						text += "\n${differencesStr[i]}"		// We write the value under the symbol
@@ -165,6 +175,8 @@ fun InputRow(userInput: SnapshotStateList<Symbol>, currIndex: Int, differencesSt
 @Composable
 fun GameControlPanel(isLandscape: Boolean, gameVM: GameViewModel)
 {
+	val areBtnsEnabled = !gameVM.isMatchPaused()			// If the current match is paused then the buttons of this panel must be disabled
+
 	if(isLandscape)
 	{
 		Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Bottom)
@@ -173,50 +185,91 @@ fun GameControlPanel(isLandscape: Boolean, gameVM: GameViewModel)
 					horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.Bottom)
 			{
 				// Pause button
-				ButtonWithIcon(btnShape = RoundedCornerShape(topEnd = NineButtonStyle.cornerRadius),
-					iconId = NineIconStyle.pause, onClick = { /*TODO*/} )
+				ButtonWithIcon(enabled = areBtnsEnabled, btnShape = RoundedCornerShape(topEnd = NineButtonStyle.cornerRadius),
+					iconId = NineIconStyle.pause, onClick = gameVM::pauseMatch )
 
 				// Select left symbol button
-				ButtonWithIcon(iconId = NineIconStyle.leftArrow, onClick = gameVM::selectPrevSymbol)
+				ButtonWithIcon(enabled = areBtnsEnabled, iconId = NineIconStyle.leftArrow, onClick = gameVM::selectPrevSymbol)
 			}
 
-			Keyboard(modifier = Modifier.fillMaxWidth().weight(0.5f), isLandscape = isLandscape, symbolSet = gameVM.getSymbolsSet(),
-				keyboardLayout = gameVM.getKeyboardLayout(), buttonsPadding = 6.dp, onBtnClick = { symbol -> gameVM.insertSymbol(symbol = symbol) })
+			Keyboard(modifier = Modifier.fillMaxWidth().weight(0.5f),
+				isLandscape = isLandscape, enabled = areBtnsEnabled,
+				symbolSet = gameVM.getSymbolsSet(), keyboardLayout = gameVM.getKeyboardLayout(),
+				buttonsPadding = 6.dp, onBtnClick = { symbol -> gameVM.insertSymbol(symbol = symbol) })
 
 			Column(modifier = Modifier.width(width = NineButtonStyle.normalWidth),
 				horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.Bottom)
 			{
 				// Evaluate button
-				ButtonWithIcon(btnShape = RoundedCornerShape(topStart = NineButtonStyle.cornerRadius),
+				ButtonWithIcon(enabled = areBtnsEnabled, btnShape = RoundedCornerShape(topStart = NineButtonStyle.cornerRadius),
 					iconId = NineIconStyle.done, onClick = gameVM::evaluate)
 
 				// Select right symbol button
-				ButtonWithIcon(iconId = NineIconStyle.rightArrow, onClick = gameVM::selectNextSymbol )
+				ButtonWithIcon(enabled = areBtnsEnabled, iconId = NineIconStyle.rightArrow, onClick = gameVM::selectNextSymbol )
 			}
 		}
 	} else {
 		Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 		{
-			Keyboard(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp), isLandscape = isLandscape, symbolSet = gameVM.getSymbolsSet(),
-				keyboardLayout = gameVM.getKeyboardLayout(), buttonsPadding = 6.dp, onBtnClick = { symbol -> gameVM.insertSymbol(symbol = symbol) })
+			Keyboard(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+				isLandscape = isLandscape, enabled = areBtnsEnabled,
+				symbolSet = gameVM.getSymbolsSet(), keyboardLayout = gameVM.getKeyboardLayout(),
+				buttonsPadding = 6.dp, onBtnClick = { symbol -> gameVM.insertSymbol(symbol = symbol) })
 
 			Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically)
 			{
 				// Select left symbol button
-				ButtonWithIcon(btnShape = RoundedCornerShape(topStart = NineButtonStyle.cornerRadius),
+				ButtonWithIcon(enabled = areBtnsEnabled, btnShape = RoundedCornerShape(topStart = NineButtonStyle.cornerRadius),
 					iconId = NineIconStyle.leftArrow, onClick = gameVM::selectPrevSymbol )
 
 				// Pause button
-				ButtonWithIcon(iconId = NineIconStyle.pause, onClick = { /*TODO*/} )
+				ButtonWithIcon(enabled = areBtnsEnabled, iconId = NineIconStyle.pause, onClick = gameVM::pauseMatch )
 
 				// Evaluate button
-				ButtonWithIcon(iconId = NineIconStyle.done, onClick = gameVM::evaluate)
+				ButtonWithIcon(enabled = areBtnsEnabled, iconId = NineIconStyle.done, onClick = gameVM::evaluate)
 
 				// Select right symbol button
-				ButtonWithIcon(btnShape = RoundedCornerShape(topEnd = NineButtonStyle.cornerRadius),
+				ButtonWithIcon(enabled = areBtnsEnabled, btnShape = RoundedCornerShape(topEnd = NineButtonStyle.cornerRadius),
 					iconId = NineIconStyle.rightArrow, onClick = gameVM::selectNextSymbol )
 			}
 		}
 	}
 }
 
+
+// A menu with some buttons that enables the user to leave the current match or resume it
+// Note that this composable makes use of the zIndex modifier attribute so that is drawn on top of the game screen
+@Composable
+fun PauseMenu(navigationCntrl: NavHostController, gameVM: GameViewModel)
+{
+	Box(modifier = Modifier.absoluteOffset(x = 0.dp, y = 0.dp)
+		.zIndex(2f)
+		.fillMaxSize(),
+		contentAlignment = Alignment.Center
+	)
+	{
+		Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp))
+		{
+			Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceEvenly)
+			{
+				ScreenTitle(title = stringResource(R.string.pause_menu_title))
+
+				// Resume button
+				Button(onClick = gameVM::resumeMatch,
+					shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+				{
+					Text(text = stringResource(R.string.pause_menu_resume), textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
+						fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
+				}
+
+				// Quit button
+				Button(onClick = { navigationCntrl.popBackStack(route = NineScreen.MainMenu.name, inclusive = false) },
+					shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+				{
+					Text(text = stringResource(R.string.pause_menu_quit), textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
+						fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
+				}
+			}
+		}
+	}
+}

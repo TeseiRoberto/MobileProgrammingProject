@@ -15,8 +15,14 @@ import com.tecnoscimmia.nine.R
  */
 
 
-class Symbol(var value: String = "")
+class Symbol(val value: String = "")
 {
+
+	fun isEmpty() : Boolean
+	{
+		return value == ""
+	}
+
 
 	companion object
 	{

@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.tecnoscimmia.nine.R
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
@@ -26,6 +27,7 @@ import com.tecnoscimmia.nine.view.widgets.GoBackButton
 import com.tecnoscimmia.nine.view.widgets.InputRow
 import com.tecnoscimmia.nine.view.widgets.MenuPanelLandscape
 import com.tecnoscimmia.nine.view.widgets.MenuPanelPortrait
+import com.tecnoscimmia.nine.view.widgets.PauseMenu
 import com.tecnoscimmia.nine.view.widgets.Scoreboard
 import com.tecnoscimmia.nine.view.widgets.ScreenTitle
 import com.tecnoscimmia.nine.view.widgets.SettingRow
@@ -165,7 +167,7 @@ fun SettingsScreen(navigationCntrl: NavHostController, settingsVM: SettingsViewM
 @Composable
 fun GameScreen(navigationCntrl: NavHostController, gameVM: GameViewModel, isLandscape: Boolean)
 {
-	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
+	Column(modifier = Modifier.fillMaxSize().zIndex(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
 		GameInfoPanel(isLandscape = isLandscape, time = gameVM.getTime(), attempts = gameVM.getAttemptsNum())
 		InputRow(userInput = gameVM.getUserInput(), currIndex = gameVM.getSelectedIndex(), differencesStr = gameVM.getDifferenceString())
@@ -174,9 +176,15 @@ fun GameScreen(navigationCntrl: NavHostController, gameVM: GameViewModel, isLand
 		if(gameVM.isDebugModeActive())
 			Text(text = "secret key is: ${gameVM.getSecretKey()}")
 
-		GoBackButton(navigationCntrl) // TODO: Remove this button
-
 		GameControlPanel(isLandscape = isLandscape, gameVM = gameVM)
 	}
+
+	// If the match is paused then we draw the pause menu on top of the game screen
+	if(gameVM.isMatchPaused())
+	{
+		PauseMenu(navigationCntrl = navigationCntrl, gameVM = gameVM)
+	}
+
 }
+
 

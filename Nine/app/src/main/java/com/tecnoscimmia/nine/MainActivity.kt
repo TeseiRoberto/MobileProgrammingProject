@@ -61,19 +61,19 @@ class MainActivity : ComponentActivity()
 
 					composable(NineScreen.Scoreboard.name)
 					{
-						val scoreboardVM: ScoreboardViewModel by viewModels() { ScoreboardViewModel.Factory }
+						val scoreboardVM: ScoreboardViewModel by viewModels { ScoreboardViewModel.Factory }
 						ScoreboardScreen(navigationCntrl = navigationCntrl, scoreboardVM = scoreboardVM, isLandscape = isLandscape)
 					}
 
 					composable(NineScreen.Settings.name)
 					{
-						val settingsVM: SettingsViewModel by viewModels() { SettingsViewModel.Factory }
+						val settingsVM: SettingsViewModel by viewModels { SettingsViewModel.Factory }
 						SettingsScreen(navigationCntrl = navigationCntrl, settingsVM = settingsVM, isLandscape = isLandscape)
 					}
 
 					composable(NineScreen.Game.name)
 					{
-						val gameVM: GameViewModel by viewModels() { GameViewModel.Factory }
+						val gameVM: GameViewModel by viewModels { GameViewModel.Factory }
 						GameScreen(navigationCntrl = navigationCntrl, gameVM = gameVM, isLandscape = isLandscape)
 					}
 				}

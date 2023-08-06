@@ -25,21 +25,12 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 	private var currMatch 			= Match(symbolsSet = Symbol.generateSymbolsSubset(appResources = appResources, symbolsSetType = settings.getSymbolsSet()))
 
 	private var selectedIndex 		= mutableStateOf(0)		// Index in which we will place the next symbol inserted by the user
-	private var insertedSymbolsNum 	= 0								// Keeps track of how many symbols has been inserted by the user (to avoid a premature evaluation of the user key)
 	private var differenceStr 		= mutableStateOf("")		// This string indicates the distances between the elements of secretKey and userKey
+	private var isMatchPaused		= mutableStateOf(false)
 
 
 	init {
 		currMatch.generateSecretKey()
-	}
-
-	fun getSecretKey() : String // TODO: Remove this function is just to test the evaluate method
-	{
-		var secretKey = ""
-		for(symbol in currMatch.getSecretKey())
-			secretKey += symbol.value
-
-		return secretKey
 	}
 
 
@@ -51,42 +42,95 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 	fun getDifferenceString() : String								{ return differenceStr.value }
 	fun getTime() : 			String								{ return "XX:XX" /* TODO: Add implementation*/ }
 	fun getAttemptsNum() : 		UInt								{ return currMatch.getAttempts() }
+	fun isMatchPaused() : 		Boolean								{ return isMatchPaused.value }
 	fun isDebugModeActive() : 	Boolean								{ return settings.isDebugModeActive() }
+
+
+	// This method is used when the debug mode is active to display the secret key in the game screen
+	fun getSecretKey() : String
+	{
+		var secretKey = ""
+		for(symbol in currMatch.getSecretKey())
+			secretKey += symbol.value
+
+		return secretKey
+	}
+
 
 	// Moves forward the selectedIndex (if possible)
 	fun selectNextSymbol()
 	{
-		val userKey = currMatch.getUserKey()
+		val userKeySize = currMatch.getUserKey().size
 
-		// We can select the next symbol only if we are not going out of array bounds and the current symbol is not empty
-		if(selectedIndex.value + 1 < userKey.size && userKey[selectedIndex.value].value.isNotEmpty())
-			selectedIndex.value++
+		// If we are in a free spot or we are at the last possible symbol
+		if(selectedIndex.value + 1 > userKeySize || selectedIndex.value + 1 == GameSettings.MAX_DIGITS_NUM)
+			selectedIndex.value = 0						// Then we wrap around
+		else
+			selectedIndex.value++						// Otherwise we can move to the next symbol
 	}
 
 
 	// Moves backwards the selectedIndex (if possible)
 	fun selectPrevSymbol()
 	{
-		if(selectedIndex.value > 0)
-			selectedIndex.value--
+		if(selectedIndex.value > 0)						// If we are somewhere in the middle of the user input
+		{
+			selectedIndex.value--						// Then we can go back to the previous symbol
+		} else {
+			val userKeySize = currMatch.getUserKey().size
+
+			if(userKeySize != GameSettings.MAX_DIGITS_NUM)	// Otherwise if there is still space to add symbols
+				selectedIndex.value = userKeySize			// We move to the first free space
+			else
+				selectedIndex.value = userKeySize - 1		// If there's no space left then we move to the last symbol
+		}
 	}
 
 
 	// Inserts the given symbols in the user key and increments the selected index (if possible)
 	fun insertSymbol(symbol: String)
 	{
-		if(insertedSymbolsNum < GameSettings.MAX_DIGITS_NUM && selectedIndex.value == insertedSymbolsNum)
-			insertedSymbolsNum++
-
 		currMatch.insertSymbol(symbol = symbol, index = selectedIndex.value)
-		selectNextSymbol()
+
+		if(selectedIndex.value + 1 < GameSettings.MAX_DIGITS_NUM)
+			selectedIndex.value++
+	}
+
+
+	// Stops the current match
+	fun pauseMatch()
+	{
+		if(isMatchPaused.value == false)
+			isMatchPaused.value = true
+		// TODO: pause the timer when we will have one :_D
+	}
+
+
+	// Restarts the current match from where it was left
+	fun resumeMatch()
+	{
+		if(isMatchPaused.value)
+			isMatchPaused.value = false
+		// TODO: unpause the timer when we will have one :_D
 	}
 
 
 	fun evaluate()
 	{
-		if(insertedSymbolsNum >= GameSettings.MAX_DIGITS_NUM)
-			differenceStr.value = currMatch.evaluate()
+		val userKey = currMatch.getUserKey()
+
+		// Check if there are empty symbols in the user input, if there is at least one then we cannot evaluate
+		// the user input so set the selected index to that element because the user must insert something in it
+		for(i in userKey.indices)
+		{
+			if(userKey[i].isEmpty())
+			{
+				selectedIndex.value = i
+				return
+			}
+		}
+
+		differenceStr.value = currMatch.evaluate()
 	}
 
 
@@ -96,7 +140,7 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 		currMatch = Match(symbolsSet = Symbol.generateSymbolsSubset(appResources = appResources, symbolsSetType = settings.getSymbolsSet()))
 		currMatch.generateSecretKey()
 		selectedIndex.value = 0
-		insertedSymbolsNum = 0
+		isMatchPaused.value = false
 	}
 
 

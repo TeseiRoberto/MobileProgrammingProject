@@ -42,12 +42,13 @@ fun ScreenTitle(title: String, verticalPadding: Dp = 12.dp)
 
 // A simple button with an icon on top
 @Composable
-fun ButtonWithIcon(btnModifier: Modifier = NineButtonStyle.defaultModifier, onClick: () -> Unit, btnShape : Shape = RectangleShape,
-				   btnShowBackground : Boolean = true, btnBackgroundColor: Color = Color.White,
+fun ButtonWithIcon(btnModifier: Modifier = NineButtonStyle.defaultModifier,
+				   enabled: Boolean = true, onClick: () -> Unit, btnShape : Shape = RectangleShape,
+				   btnShowBackground: Boolean = true, btnBackgroundColor: Color = Color.White,
 				   btnShowBorder: Boolean = true, btnBorderColor: Color = Color.Black,
 				   iconModifier: Modifier = NineIconStyle.defaultModifier, iconId: Int, iconColor: Color = Color.Black)
 {
-	Button(modifier = btnModifier, onClick = onClick, shape = btnShape,
+	Button(modifier = btnModifier, enabled = enabled, onClick = onClick, shape = btnShape,
 		colors = ButtonDefaults.buttonColors(containerColor = if(btnShowBackground) btnBackgroundColor else btnBackgroundColor.copy(alpha = 0f)),
 		border = BorderStroke(width = NineButtonStyle.borderWidth, color = if(btnShowBorder) btnBorderColor else btnBorderColor.copy(alpha = 0f))
 	)

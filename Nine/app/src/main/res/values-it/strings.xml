@@ -15,6 +15,12 @@
     <string name="scoreboard_message_is_empty">Non è ancora stata giocata alcuna partita!</string>
 
 
+    <!-- Strings used in the pause menu -->
+    <string name="pause_menu_title">in pausa</string>
+    <string name="pause_menu_resume">resume</string>
+    <string name="pause_menu_quit">quit</string>
+
+
     <!-- Strings used in the settings screen -->
     <string name="settings_screen_title">Impostazioni</string>
     <string name="settings_message_start_tutorial">Impara a giocare</string>
@@ -52,7 +58,7 @@
     <string name="emoticons_symbols">0x1F600,0x1F602,0x1F605,0x1F607,0x1F608,0x1F609,0x1F60A,0x1F60B,0x1F60D,0x1F60E,0x1F60F,0x1F611,0x1F61D,0x1F621,0x1F62C,0x1F62E,0x1F631,0x1F922,0x1F929,0x1F92F,0x1F493,0x1F4A3,0x1F4A9</string>
 
     <!-- Available values for the debug mode setting -->
-    <string name="settings_debug_mode_active">attivata</string>
-    <string name="settings_debug_mode_inactive">disattivata</string>
+    <string name="settings_debug_mode_active">attiva</string>
+    <string name="settings_debug_mode_inactive">disattiva</string>
 
 </resources>

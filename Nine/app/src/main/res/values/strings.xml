@@ -2,7 +2,7 @@
 
     <string name="app_name">Nine</string>
 
-    <!-- Strings used in the enu screen-->
+    <!-- Strings used in the menu screen-->
     <string name="menu_message_to_play">Swipe to play!</string>
 
 
@@ -13,6 +13,12 @@
     <string name="scoreboard_date_column_header">Date</string>
     <string name="scoreboard_game_mode_column_header">Game mode</string>
     <string name="scoreboard_message_is_empty">No match has been played yet!</string>
+
+
+    <!-- Strings used in the pause menu -->
+    <string name="pause_menu_title">paused</string>
+    <string name="pause_menu_resume">resume</string>
+    <string name="pause_menu_quit">quit</string>
 
 
     <!-- Strings used in the settings screen -->
