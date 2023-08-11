@@ -1,6 +1,7 @@
 package com.tecnoscimmia.nine.viewModel
 
 import android.content.res.Resources
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel

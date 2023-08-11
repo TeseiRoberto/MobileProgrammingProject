@@ -10,6 +10,14 @@ import com.tecnoscimmia.nine.R
 
 class SettingsRepository private constructor()
 {
+	// Getter methods
+	fun getAvailableThemes() 			: List<String> 		{ return availableThemes!! }
+	fun getAvailableKeyboardLayouts() 	: List<String> 		{ return availableKeyboardLayouts!! }
+	fun getAvailableSymbolsSets() 		: List<String> 		{ return availableSymbolsSets!! }
+	fun getAvailableGameModes() 		: List<String> 		{ return availableGameModes!! }
+	fun getAvailableDebugModes()		: List<String>		{ return availableDebugModes!! }
+
+
 	companion object
 	{
 		private var instance : SettingsRepository? = null
@@ -61,12 +69,4 @@ class SettingsRepository private constructor()
 			return instance!!
 		}
 	}
-
-
-	// Getter methods
-	fun getAvailableThemes() 			: List<String> 		{ return availableThemes!! }
-	fun getAvailableKeyboardLayouts() 	: List<String> 		{ return availableKeyboardLayouts!! }
-	fun getAvailableSymbolsSets() 		: List<String> 		{ return availableSymbolsSets!! }
-	fun getAvailableGameModes() 		: List<String> 		{ return availableGameModes!! }
-	fun getAvailableDebugModes()		: List<String>		{ return availableDebugModes!! }
 }

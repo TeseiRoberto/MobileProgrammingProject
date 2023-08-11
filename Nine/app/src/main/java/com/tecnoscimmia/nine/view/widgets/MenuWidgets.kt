@@ -1,6 +1,12 @@
 package com.tecnoscimmia.nine.view.widgets
 
 import android.widget.Toast
+import androidx.compose.animation.core.EaseInOutQuint
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +20,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -29,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.tecnoscimmia.nine.R
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
@@ -134,17 +144,16 @@ fun GameModeSelector(currGameMode: String, onLeftArrowClick: () -> Unit, onRight
 }
 
 
-// A box containing an icon that is listening for swipe events, when a swipe (towards the top of the device) happens
-// the icon gets scaled (on the y axis) and if the swipe is grater than the swipeThreshold then the given onSwipe callback is called
+// A column that is listening for vertical swipe events, it contains some animated arrow that indicates the swipe direction
+// and an animated text message. When the user swipes if the swipe is grater than the swipeThreshold then the given onSwipe callback is called
 @Composable
-fun GameStarter(width: Dp, height: Dp, onSwipe: () -> Unit, swipeThreshold: Float, maxIconScale: Float)
+fun GameStarter(width: Dp, height: Dp, onSwipe: () -> Unit, swipeThreshold: Float)
 {
-	val currScale = remember { mutableStateOf(1f) }				// Value used to scale on the Y axis the image
+	val arrowsNum = 5
 	val currSwipeAmount = remember { mutableStateOf(0f) }			// Value changed when the user swipes in the box
 
-	val modifier = Modifier
+	val columnModifier = Modifier
 		.size(width = width, height = height)
-		.background(Color.Red) // TODO: To be removed, only for debug!!!
 		.pointerInput(Unit)
 		{
 			detectDragGestures(
@@ -152,34 +161,59 @@ fun GameStarter(width: Dp, height: Dp, onSwipe: () -> Unit, swipeThreshold: Floa
 					change.consume()
 
 					if (dragAmount.y < 0)                                // Update the current swipe amount only if the swipe motion is from bottom to top
-					{
 						currSwipeAmount.value += dragAmount.y
-
-						if (currScale.value < maxIconScale)
-							currScale.value += 0.1f
-					}
 				},
 
 				onDragEnd = {                                            // Executed when the drag is over
 					if (currSwipeAmount.value < swipeThreshold)          // If the swipe made by the user is "long enough"
 						onSwipe()                                        // Then call the callback function
 
-					currScale.value = 1f                                // Reset all values
 					currSwipeAmount.value = 0f
 				}
 			)
 		}
 
-	Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center)
+	Column(modifier = columnModifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center)
 	{
-		Box(modifier = modifier, contentAlignment = Alignment.Center)
+		// Animated arrows that indicates the swipe motion
+		for(i in 0 until arrowsNum)
 		{
-			Icon(modifier = Modifier.scale(scaleX = 1f, scaleY = currScale.value)
-				.size(width = NineIconStyle.longWidth, height = NineIconStyle.normalHeight),
-				painter = painterResource(NineIconStyle.hourglass), contentDescription = null)
+			val infiniteTransition = rememberInfiniteTransition()
+			val alpha = infiniteTransition.animateFloat(
+				initialValue = 0f,
+				targetValue = 0.3f * (arrowsNum - i + 1).toFloat(),
+				animationSpec = infiniteRepeatable(
+					animation = tween(durationMillis = 1750, easing = EaseInOutQuint),
+					repeatMode = RepeatMode.Reverse
+				)
+			)
+
+			Icon(modifier = Modifier
+				.scale(scaleX = 4f, scaleY = 4f)
+				.padding(vertical = 4.dp)
+				.alpha(alpha = alpha.value),
+				imageVector = Icons.Rounded.KeyboardArrowUp, contentDescription = null)
+
 		}
 
-		Text(text = stringResource(R.string.menu_message_to_play), fontSize = NineTextStyle.subTitle.fontSize,
+		// Create an infinite animation that scales the text
+		val textAnimation = rememberInfiniteTransition()
+		val textScale = textAnimation.animateFloat(
+			initialValue = 1f,
+			targetValue = 1.4f,
+			animationSpec = infiniteRepeatable(
+				animation = tween(durationMillis = 1750, easing = EaseInOutQuint),
+				repeatMode = RepeatMode.Reverse
+			)
+		)
+
+		// "Swipe to play" text
+		Text(modifier = Modifier
+			.padding(vertical = 4.dp)
+			.scale(textScale.value),
+			text = stringResource(R.string.menu_message_to_play), fontSize = NineTextStyle.subTitle.fontSize,
 			fontWeight = NineTextStyle.subTitle.fontWeight, fontFamily = NineTextStyle.subTitle.fontFamily)
 	}
 }
+
+

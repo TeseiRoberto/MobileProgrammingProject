@@ -56,13 +56,13 @@ fun MenuScreen(navigationCntrl : NavHostController, menuVM: MenuViewModel, isLan
 			MenuPanelLandscape(onClickSettings = { navigationCntrl.navigate(route = NineScreen.Settings.name) },
 								onClickScoreboard = { navigationCntrl.navigate(route = NineScreen.Scoreboard.name) })
 
-			GameStarter(250.dp, 180.dp, onSwipe = { navigationCntrl.navigate(route = NineScreen.Game.name) }, swipeThreshold = 300f, maxIconScale = 4f)
+			GameStarter(250.dp, 200.dp, onSwipe = { navigationCntrl.navigate(route = NineScreen.Game.name) }, swipeThreshold = 300f)
 		} else {
 
 			MenuPanelPortrait(onClickSettings = { navigationCntrl.navigate(route = NineScreen.Settings.name) },
 				onClickScoreboard = { navigationCntrl.navigate(route = NineScreen.Scoreboard.name) })
 
-			GameStarter(230.dp, 300.dp, onSwipe = { navigationCntrl.navigate(route = NineScreen.Game.name) }, swipeThreshold = 300f, maxIconScale = 4f)
+			GameStarter(230.dp, 300.dp, onSwipe = { navigationCntrl.navigate(route = NineScreen.Game.name) }, swipeThreshold = 300f)
 		}
 
 		GameModeSelector(menuVM.getGameMode(), onLeftArrowClick = menuVM::setPrevGameMode, onRightArrowClick = menuVM::setNextGameMode)
@@ -169,7 +169,7 @@ fun GameScreen(navigationCntrl: NavHostController, gameVM: GameViewModel, isLand
 {
 	Column(modifier = Modifier.fillMaxSize().zIndex(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
-		GameInfoPanel(isLandscape = isLandscape, time = gameVM.getTime(), attempts = gameVM.getAttemptsNum())
+		GameInfoPanel(isLandscape = isLandscape, gameVM = gameVM)
 		InputRow(userInput = gameVM.getUserInput(), currIndex = gameVM.getSelectedIndex(), differencesStr = gameVM.getDifferenceString())
 
 		// If the app is running in debug mode then we can show the secret key

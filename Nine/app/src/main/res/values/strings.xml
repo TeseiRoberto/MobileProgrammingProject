@@ -21,6 +21,11 @@
     <string name="pause_menu_quit">quit</string>
 
 
+    <!-- String used in the game screen -->
+    <string name="game_screen_correctly_guessed">guessed:</string>
+    <string name="game_screen_attempts">attempts:</string>
+
+
     <!-- Strings used in the settings screen -->
     <string name="settings_screen_title">Settings</string>
     <string name="settings_message_start_tutorial">Learn to play</string>

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.tecnoscimmia.nine.MainActivity
 import com.tecnoscimmia.nine.R
 import com.tecnoscimmia.nine.model.GameSettings
 import com.tecnoscimmia.nine.model.SettingsRepository
@@ -146,7 +147,7 @@ class SettingsViewModel(private val appResources: Resources, private val setting
 		if(currTheme.value != settings.getTheme())
 		{
 			settings.setTheme(newTheme = currTheme.value)
-			// TODO: Need to actually change the application theme
+			MainActivity.appTheme.value = currTheme.value			// Change the theme of the application
 		}
 
 		if(currKeyboardLayout.value != settings.getKeyboardLayout())

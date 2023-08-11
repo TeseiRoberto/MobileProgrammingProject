@@ -102,9 +102,9 @@ fun Keyboard(modifier: Modifier, isLandscape: Boolean, enabled: Boolean, symbolS
 }
 
 
-// A panel that shows the timer and the number of attempts
+// A panel that shows info about the game
 @Composable
-fun GameInfoPanel(isLandscape: Boolean, time: String, attempts: UInt)
+fun GameInfoPanel(isLandscape: Boolean, gameVM: GameViewModel)
 {
 	Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
 	{
@@ -113,14 +113,18 @@ fun GameInfoPanel(isLandscape: Boolean, time: String, attempts: UInt)
 		{
 			Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
 			{
-				Icon(painter = painterResource(NineIconStyle.hourglass), contentDescription = null,
-					modifier = Modifier.size(width = NineIconStyle.veryShortWidth, height = NineIconStyle.veryShortHeight))
+					// Hourglass icon
+					Icon(painter = painterResource(NineIconStyle.hourglass), contentDescription = null,
+						modifier = Modifier.size(width = NineIconStyle.veryShortWidth, height = NineIconStyle.veryShortHeight))
 
-				Text(text = time, fontFamily = NineTextStyle.subTitle.fontFamily, fontSize = NineTextStyle.subTitle.fontSize,
-					fontWeight = NineTextStyle.subTitle.fontWeight)
+					// Elapsed time
+					Text(text = gameVM.getTime(), fontFamily = NineTextStyle.subTitle.fontFamily,
+						fontSize = NineTextStyle.subTitle.fontSize, fontWeight = NineTextStyle.subTitle.fontWeight)
 
-				Text(text = "Attempts: $attempts", fontFamily = NineTextStyle.subTitle.fontFamily,
-					fontSize = NineTextStyle.subTitle.fontSize, fontWeight = NineTextStyle.subTitle.fontWeight)
+					// Number of attempts
+					Text(text = stringResource(R.string.game_screen_attempts) + gameVM.getAttemptsNum(),
+						fontFamily = NineTextStyle.subTitle.fontFamily, fontSize = NineTextStyle.subTitle.fontSize,
+						fontWeight = NineTextStyle.subTitle.fontWeight)
 			}
 		}
 	}

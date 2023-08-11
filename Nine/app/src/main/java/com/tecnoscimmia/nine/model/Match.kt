@@ -79,7 +79,7 @@ class Match(private val symbolsSet: Array<Symbol>)
 	}
 
 
-	// Calculates the differences string comparing the content of userKey with the secret key and then returns it
+	// Calculates the differences string comparing the content of userKey and secret key and then returns it
 	fun evaluate() : String
 	{
 		// If the user key contains a number of elements that is not equal to the size of the secret key then we cannot evaluate
@@ -106,7 +106,7 @@ class Match(private val symbolsSet: Array<Symbol>)
 			// Add char to differences string to indicate the distance between symbols
 			differencesStr += if(symbolsDistance == 0)
 				"0"
-			else if(symbolsDistance < GameSettings.MAX_DIGITS_NUM / 2)
+			else if(symbolsDistance <= GameSettings.MAX_DIGITS_NUM / 2)
 				symbolsDistance.toString()
 			else
 				(GameSettings.MAX_DIGITS_NUM - symbolsDistance).toString()

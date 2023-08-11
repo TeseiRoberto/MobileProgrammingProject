@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -59,18 +60,13 @@ fun ButtonWithIcon(btnModifier: Modifier = NineButtonStyle.defaultModifier,
 
 
 // A simple button positioned in the bottom left with an arrow icon on top, it's used to go back to the previous screen.
-// If the onClick callback is given then it's executed after the screen has changed
 @Composable
-fun GoBackButton(navigationCntrl: NavHostController, onClick: ( () -> Unit)? = null)
+fun GoBackButton(navigationCntrl: NavHostController)
 {
 	// Lambda called when the back button is clicked, had to add explicit return type because popBackStack returns a Boolean and
 	// being the only instruction it's result would be returned by the lambda
 	val onClickBackBtn = {
 		navigationCntrl.popBackStack(route = NineScreen.MainMenu.name, inclusive = false)
-
-		if(onClick != null)
-			onClick()
-
 		Unit
 	}
 

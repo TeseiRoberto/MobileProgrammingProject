@@ -17,8 +17,13 @@
 
     <!-- Strings used in the pause menu -->
     <string name="pause_menu_title">in pausa</string>
-    <string name="pause_menu_resume">resume</string>
-    <string name="pause_menu_quit">quit</string>
+    <string name="pause_menu_resume">riprendi</string>
+    <string name="pause_menu_quit">abbandona</string>
+
+
+    <!-- String used in the game screen -->
+    <string name="game_screen_correctly_guessed">indovinate:</string>
+    <string name="game_screen_attempts">tentativi:</string>
 
 
     <!-- Strings used in the settings screen -->
