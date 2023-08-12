@@ -72,10 +72,31 @@ class Match(private val symbolsSet: Array<Symbol>)
 	// Generates a new secret key using the symbols in the symbols set
 	fun generateSecretKey()
 	{
-		// TODO: This code for now simply sets the secret key using the same order of elements of the given symbol set, but we need to
-		// TODO: actually generate the secret key randomly!
-		for(i in secretKey.indices)
-			secretKey[i] =  Symbol(value = symbolsSet[i].value)
+		for(i in secretKey.indices)								// For every element in secret key
+		{
+			val j = symbolsSet.indices.random()					// Choose a random index
+			var currSymbol = symbolsSet[j]						// Get the symbol at the chosen index
+
+			if(currSymbol in secretKey)							// If the chosen symbol is already in the secret key then we need to chose another one
+			{
+				for(k in symbolsSet.indices)					// What we do is simply move forward and backwards from the chosen index and the first
+				{												// symbol that we find that has not already been chosen gets picked
+					if(j + k < symbolsSet.size && symbolsSet[j + k] !in secretKey)
+					{
+						currSymbol = symbolsSet[j + k]
+						break
+					}
+
+					if(j - k > 0 && symbolsSet[j - k] !in secretKey)
+					{
+						currSymbol = symbolsSet[j - k]
+						break
+					}
+				}
+			}
+
+			secretKey[i] = currSymbol
+		}
 	}
 
 
@@ -106,7 +127,7 @@ class Match(private val symbolsSet: Array<Symbol>)
 			// Add char to differences string to indicate the distance between symbols
 			differencesStr += if(symbolsDistance == 0)
 				"0"
-			else if(symbolsDistance <= GameSettings.MAX_DIGITS_NUM / 2)
+			else if(symbolsDistance <= (GameSettings.MAX_DIGITS_NUM / 2) )
 				symbolsDistance.toString()
 			else
 				(GameSettings.MAX_DIGITS_NUM - symbolsDistance).toString()
