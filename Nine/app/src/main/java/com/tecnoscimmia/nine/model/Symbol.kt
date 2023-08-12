@@ -45,23 +45,21 @@ class Symbol(val value: String = "")
 
 			// Now we need to parse the symbols string
 			var currStr = ""												// Temporary buffer for the current symbol
-
-			for(el in symbolsStr)											// For each character in the symbols string
+			for(i in 0 .. symbolsStr.length)
 			{
-				if(el == ',')												// If we find a comma then we reached the end of the string that defines the current symbol
+				if(i == symbolsStr.length || symbolsStr[i] == ',')	// If we reached the end of the string or the current char is a comma
 				{
-					if(usingEmoticons)										// If we are using emoticons as symbols set
+					if(usingEmoticons)								// If we are using emoticons as symbols set then we need to parse the hex code of the emoji
 					{
-						val emojiCode = Integer.decode(currStr)								// We need to parse the hex code that defines the emoji
-						result.add(Symbol(value = String(Character.toChars(emojiCode))))	// Then we can build a string that contains the emoji
+						val emojiCode = Integer.decode(currStr)
+						result.add(Symbol(value = String(Character.toChars(emojiCode))))
 					} else {
-						result.add(Symbol(value = currStr))									// Otherwise we just add the symbol to the result list
+						result.add(Symbol(value = currStr))			// Otherwise we just add the symbol to the result list
 					}
 					currStr = ""
-				} else {													// If current char is not a comma
-					currStr += el											// Then we simply add it to currStr (is part of the current symbol)
+				} else {
+					currStr += symbolsStr[i]
 				}
-
 			}
 
 			return result.toTypedArray()
