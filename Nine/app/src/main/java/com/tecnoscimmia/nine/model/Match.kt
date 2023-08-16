@@ -27,7 +27,16 @@ class Match(private val symbolsSet: Array<Symbol>)
 	fun getSymbolsSet() : 	Array<Symbol>				{ return symbolsSet }			// Returns the symbols set used for this match
 	fun getAttempts() : 	UInt						{ return attemptsNum.value }
 	fun getUserKey() : 		SnapshotStateList<Symbol>	{ return userKey }
-	fun getSecretKey() : 	Array<Symbol> 				{ return secretKey }
+
+	// This method returns the secret key as a string
+	fun getSecretKeyAsString() : String
+	{
+		var secretKeyStr = ""
+		for(symbol in secretKey)
+			secretKeyStr += symbol.value
+
+		return secretKeyStr
+	}
 
 
 	// Inserts a new symbols in user key at the given index
@@ -109,6 +118,7 @@ class Match(private val symbolsSet: Array<Symbol>)
 
 		attemptsNum.value++
 		var differencesStr = ""
+		val keyHalfLen = GameSettings.MAX_DIGITS_NUM / 2
 
 		// We need to calculate the distance ,in terms of indices, between the symbols in the user key and the symbols in the secret key
 		for(i in userKey.indices)
@@ -125,9 +135,7 @@ class Match(private val symbolsSet: Array<Symbol>)
 			}
 
 			// Add char to differences string to indicate the distance between symbols
-			differencesStr += if(symbolsDistance == 0)
-				"0"
-			else if(symbolsDistance <= (GameSettings.MAX_DIGITS_NUM / 2) )
+			differencesStr += if(symbolsDistance <= keyHalfLen)
 				symbolsDistance.toString()
 			else
 				(GameSettings.MAX_DIGITS_NUM - symbolsDistance).toString()

@@ -2,14 +2,11 @@
 package com.tecnoscimmia.nine.view.widgets
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.absoluteOffset
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,18 +15,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.tecnoscimmia.nine.R
 import com.tecnoscimmia.nine.model.GameSettings
@@ -45,21 +41,12 @@ import com.tecnoscimmia.nine.viewModel.GameViewModel
  */
 
 
-// A button that contains a symbol, this is used to implement the Keyboard and the SymbolRow widgets
+// A button that contains a symbol, this is used to implement the Keyboard widget
 @Composable
-fun SymbolButton(enabled: Boolean, width: Dp, height: Dp, symbol: String, backgroundColor: Color = Color.White, borderColor: Color = Color.Black,
-				 onClick: (String) -> Unit, isSelected: Boolean = false)
+fun SymbolButton(enabled: Boolean, width: Dp, height: Dp, symbol: String, onClick: (String) -> Unit)
 {
-	val modifier = Modifier.size(width = width, height = height)
-		.background(color = backgroundColor)
-		.border(
-			border = BorderStroke(width = if (isSelected) 3.dp else 1.dp, color = borderColor),
-			shape = RoundedCornerShape(
-				NineButtonStyle.cornerRadius
-			)
-		)
-
-	Button(modifier = modifier, enabled = enabled, onClick = { onClick(symbol) }, shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+	Button(modifier = Modifier.size(width = width, height = height),
+		enabled = enabled, onClick = { onClick(symbol) }, shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
 	{
 		Text(text = symbol, textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
 			fontSize = NineTextStyle.title.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
@@ -92,7 +79,7 @@ fun Keyboard(modifier: Modifier, isLandscape: Boolean, enabled: Boolean, symbolS
 				var j = 0
 				while(j < numOfCols && i < symbolSet.size)
 				{
-					SymbolButton(enabled = enabled, width = 64.dp, height = 64.dp, symbol = symbolSet[i].value, onClick = onBtnClick)
+					SymbolButton(enabled = enabled, width = NineButtonStyle.keyboardBtnWidth, height = NineButtonStyle.keyboardBtnHeight, symbol = symbolSet[i].value, onClick = onBtnClick)
 					i++
 					j++
 				}
@@ -163,7 +150,7 @@ fun InputRow(userInput: SnapshotStateList<Symbol>, currIndex: Int, differencesSt
 
 					// If the current element is the one selected then we draw a box around it
 					if(i == currIndex)
-						Box(modifier = Modifier.size(64.dp).border(BorderStroke(width = 3.dp, color = Color.Black)),
+						Box(modifier = Modifier.size(64.dp).border(BorderStroke(width = 3.dp, color = MaterialTheme.colorScheme.outline)),
 							contentAlignment = Alignment.Center, content = { element() })
 					else
 						element()
@@ -175,11 +162,12 @@ fun InputRow(userInput: SnapshotStateList<Symbol>, currIndex: Int, differencesSt
 
 
 
-// A panel that contains the keyboard widget and some buttons that enables the user to control the game state
+// A panel that contains the keyboard widget and some buttons that enables the user to interact with the game
 @Composable
 fun GameControlPanel(isLandscape: Boolean, gameVM: GameViewModel)
 {
-	val areBtnsEnabled = !gameVM.isMatchPaused()			// If the current match is paused then the buttons of this panel must be disabled
+	// If the current match is paused or is over then the keyboard and the control buttons must be disabled
+	val areBtnsEnabled = !(gameVM.isMatchPaused() || gameVM.isMatchOver())
 
 	if(isLandscape)
 	{
@@ -244,15 +232,12 @@ fun GameControlPanel(isLandscape: Boolean, gameVM: GameViewModel)
 // A menu with some buttons that enables the user to leave the current match or resume it
 // Note that this composable makes use of the zIndex modifier attribute so that is drawn on top of the game screen
 @Composable
-fun PauseMenu(navigationCntrl: NavHostController, gameVM: GameViewModel)
+fun PauseMenu(isLandscape: Boolean, navigationCntrl: NavHostController, gameVM: GameViewModel)
 {
-	Box(modifier = Modifier.absoluteOffset(x = 0.dp, y = 0.dp)
-		.zIndex(2f)
-		.fillMaxSize(),
-		contentAlignment = Alignment.Center
-	)
+	OverlayContent(zIndex = 2f)
 	{
-		Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp))
+		Card(modifier = Modifier.fillMaxWidth()
+			.padding(horizontal = if(isLandscape) 128.dp else 32.dp))
 		{
 			Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceEvenly)
 			{
@@ -274,6 +259,42 @@ fun PauseMenu(navigationCntrl: NavHostController, gameVM: GameViewModel)
 						fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
 				}
 			}
+		}
+	}
+}
+
+
+// A menu that is shown when the user guesses the secret key, it enables the user to go back to the main menu or start a new match
+// Note that this composable makes use of the OnTopSurface composable so that is drawn on top of the game screen
+@Composable
+fun WinPanel(isLandscape: Boolean, navigationCntrl: NavHostController, gameVM: GameViewModel)
+{
+	OverlayContent(zIndex = 2f)
+	{
+		Card(modifier = Modifier.fillMaxWidth()
+			.padding(horizontal = if(isLandscape) 128.dp else 32.dp))
+		{
+			Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceEvenly)
+			{
+				ScreenTitle(title = stringResource(R.string.game_screen_win_message))
+
+				// Play again button
+				Button(onClick = gameVM::startNewMatch,
+					shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+				{
+					Text(text = stringResource(R.string.game_screen_play_again), textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
+						fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
+				}
+
+				// Quit button
+				Button(onClick = { navigationCntrl.popBackStack(route = NineScreen.MainMenu.name, inclusive = false) },
+					shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+				{
+					Text(text = stringResource(R.string.game_screen_back_to_menu), textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
+						fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
+				}
+			}
+
 		}
 	}
 }

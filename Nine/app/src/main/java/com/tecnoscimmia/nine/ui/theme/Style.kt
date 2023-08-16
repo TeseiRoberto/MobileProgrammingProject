@@ -37,6 +37,9 @@ class NineButtonStyle
 		val normalHeight 	= 74.dp
 		val borderWidth 	= 1.dp
 
+		val keyboardBtnWidth = 64.dp
+		val keyboardBtnHeight = 64.dp
+
 		val cornerRadius	= 12.dp
 
 		val defaultModifier = Modifier.size(width = normalWidth, height = normalHeight)

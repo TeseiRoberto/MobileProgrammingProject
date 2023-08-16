@@ -1,12 +1,10 @@
 package com.tecnoscimmia.nine.viewModel
 
 import android.content.res.Resources
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.tecnoscimmia.nine.model.GameSettings
 import com.tecnoscimmia.nine.model.Match
@@ -28,34 +26,25 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 	private var selectedIndex 		= mutableStateOf(0)		// Index in which we will place the next symbol inserted by the user
 	private var differenceStr 		= mutableStateOf("")		// This string indicates the distances between the elements of secretKey and userKey
 	private var isMatchPaused		= mutableStateOf(false)
-
+	private var isMatchOver			= mutableStateOf(false)
 
 	init {
 		currMatch.generateSecretKey()
 	}
-
 
 	// Getter methods
 	fun getKeyboardLayout() : 	GameSettings.KeyboardLayoutSetting 	{ return settings.getKeyboardLayout()}
 	fun getSymbolsSet() : 		Array<Symbol>						{ return currMatch.getSymbolsSet() }
 	fun getSelectedIndex() : 	Int									{ return selectedIndex.value}
 	fun getUserInput() : 		SnapshotStateList<Symbol>			{ return currMatch.getUserKey() }
+
 	fun getDifferenceString() : String								{ return differenceStr.value }
 	fun getTime() : 			String								{ return "XX:XX" /* TODO: Add implementation*/ }
 	fun getAttemptsNum() : 		UInt								{ return currMatch.getAttempts() }
 	fun isMatchPaused() : 		Boolean								{ return isMatchPaused.value }
+	fun isMatchOver() : 		Boolean								{ return isMatchOver.value }
 	fun isDebugModeActive() : 	Boolean								{ return settings.isDebugModeActive() }
-
-
-	// This method is used when the debug mode is active to display the secret key in the game screen
-	fun getSecretKey() : String
-	{
-		var secretKey = ""
-		for(symbol in currMatch.getSecretKey())
-			secretKey += symbol.value
-
-		return secretKey
-	}
+	fun getSecretKey() : 		String 								{ return currMatch.getSecretKeyAsString() }
 
 
 	// Moves forward the selectedIndex (if possible)
@@ -121,7 +110,7 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 		val userKey = currMatch.getUserKey()
 
 		// Check if there are empty symbols in the user input, if there is at least one then we cannot evaluate
-		// the user input so set the selected index to that element because the user must insert something in it
+		// the user input so we set the selected index to that element because the user must insert something in it
 		for(i in userKey.indices)
 		{
 			if(userKey[i].isEmpty())
@@ -131,17 +120,29 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 			}
 		}
 
-		differenceStr.value = currMatch.evaluate()
+		differenceStr.value = currMatch.evaluate()			// Check differences between user key and secret key
+
+		if(differenceStr.value == "000000000")				// If the user key and the secret key are the same
+		{
+			when(settings.getGameMode())					// We do something according to the current game mode
+			{
+				GameSettings.GameModeSetting.CHALLENGE_GAME_MODE -> isMatchOver.value = true
+				GameSettings.GameModeSetting.TRAINING_GAME_MODE -> startNewMatch()
+			}
+		}
+
 	}
 
 
 	// Creates a new match and resets the properties of the view model that are related to the old match
 	fun startNewMatch()
-	{
+	{		currMatch.generateSecretKey()
+
 		currMatch = Match(symbolsSet = Symbol.generateSymbolsSubset(appResources = appResources, symbolsSetType = settings.getSymbolsSet()))
 		currMatch.generateSecretKey()
 		selectedIndex.value = 0
 		isMatchPaused.value = false
+		isMatchOver.value = false
 	}
 
 
@@ -153,13 +154,14 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 			@Suppress("UNCHECKED_CAST")
 			override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T
 			{
-				val application = checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])			// Get the application object form extras
-				val savedStateHandle = extras.createSavedStateHandle()			// Create a SavedStateHandle for this ViewModel from extras
+				val application = checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])						// Get the application object form extras
 
-				return GameViewModel(appResources = application.resources,
-					settings = GameSettings.getInstance(application.applicationContext),
-					resultRepo = MatchResultRepository(MatchResultDb.getInstance(application.applicationContext).matchResultDao()) ) as T
+				val gameSettings 	= GameSettings.getInstance(application.applicationContext)											// Retrieve game settings instance
+				val resultRepo 		= MatchResultRepository(MatchResultDb.getInstance(application.applicationContext).matchResultDao())	// Instantiate a match result repository
+
+				return GameViewModel(appResources = application.resources, settings = gameSettings, resultRepo = resultRepo) as T
 			}
 		}
 	}
 }
+

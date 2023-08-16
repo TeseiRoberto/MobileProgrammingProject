@@ -44,7 +44,7 @@ class Symbol(val value: String = "")
 			}
 
 			// Now we need to parse the symbols string
-			var currStr = ""												// Temporary buffer for the current symbol
+			var currStr = ""										// Temporary buffer for the current symbol
 			for(i in 0 .. symbolsStr.length)
 			{
 				if(i == symbolsStr.length || symbolsStr[i] == ',')	// If we reached the end of the string or the current char is a comma

@@ -24,6 +24,9 @@
     <!-- String used in the game screen -->
     <string name="game_screen_correctly_guessed">indovinate:</string>
     <string name="game_screen_attempts">tentativi:</string>
+    <string name="game_screen_play_again">nuova partita</string>
+    <string name="game_screen_back_to_menu">torna al menu</string>
+    <string name="game_screen_win_message">Hai vinto!</string>
 
 
     <!-- Strings used in the settings screen -->

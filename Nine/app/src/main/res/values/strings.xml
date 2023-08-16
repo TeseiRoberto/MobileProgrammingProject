@@ -24,6 +24,10 @@
     <!-- String used in the game screen -->
     <string name="game_screen_correctly_guessed">guessed:</string>
     <string name="game_screen_attempts">attempts:</string>
+    <string name="game_screen_play_again">play again</string>
+    <string name="game_screen_back_to_menu">back to menu</string>
+    <string name="game_screen_win_message">You won!</string>
+
 
 
     <!-- Strings used in the settings screen -->
