@@ -16,7 +16,7 @@ class GameSettings private constructor(private val preferencesFile: SharedPrefer
 	// Those enums defines all the available values for each game setting
 	enum class ThemeSetting 			{ LIGHT_THEME, DARK_THEME }
 	enum class KeyboardLayoutSetting 	{ THREE_BY_THREE_KBD_LAYOUT, TWO_LINES_KBD_LAYOUT }
-	enum class GameModeSetting			{ TRAINING_GAME_MODE, CHALLENGE_GAME_MODE }
+	enum class GameModeSetting			{ TRAINING_GAME_MODE, CHALLENGE_GAME_MODE }								// Don't change the names of those enums, they are used to store data in the DB in this way we are not bound to the representation of a specific locale
 	enum class SymbolsSetSetting		{ NUMBERS_SYMBOLS_SET, LETTERS_SYMBOLS_SET, EMOTICONS_SYMBOLS_SET }
 
 
@@ -28,6 +28,7 @@ class GameSettings private constructor(private val preferencesFile: SharedPrefer
 	private var showTutorial: 			Boolean = false															// Indicates if tutorial will be shown on app start up
 	private var debugMode:				Boolean = false															// Indicates if the application is running in debug mode
 
+	
 	// Getter methods
 	fun getTheme() : 					ThemeSetting 			{ return theme }
 	fun getKeyboardLayout() : 			KeyboardLayoutSetting 	{ return keyboardLayout }

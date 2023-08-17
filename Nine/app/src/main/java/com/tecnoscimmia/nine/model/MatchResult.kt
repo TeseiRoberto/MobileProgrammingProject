@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 
 
@@ -77,21 +78,18 @@ class MatchResultRepository(private val dao: MatchResultDao)
 	private val matchResultsData = MutableLiveData<List<MatchResult>>()
 
 	// Inserts a new record in the MatchResult table of the db
-	fun addMatchResult(timestamp: Date, matchDuration: String, gameMode: String)
+	fun addMatchResult(matchDuration: String, gameMode: String)
 	{
 		CoroutineScope(Dispatchers.Main).launch(Dispatchers.IO)
 		{
-			val dateFormat = SimpleDateFormat("yyyy/MM/dd")
-			val date = dateFormat.format(timestamp)
+			val today = Calendar.getInstance().time					// Get current date
+			val dateFormat = SimpleDateFormat.getDateInstance()		// Create a date formatter for the current locale
+			val date = dateFormat.format(today)						// Create string that specifies the current date
 
 			dao.insertResult(MatchResult(date = date, time = matchDuration, gameMode = gameMode))
 		}
 	}
 
-	/*fun getAllResults() : LiveData<List<MatchResult>>
-	{
-		return matchResultsData
-	}*/
 
 	fun getAllResults() : LiveData<List<MatchResult>>
 	{

@@ -6,11 +6,13 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.tecnoscimmia.nine.R
 import com.tecnoscimmia.nine.model.GameSettings
 import com.tecnoscimmia.nine.model.Match
 import com.tecnoscimmia.nine.model.MatchResultDb
 import com.tecnoscimmia.nine.model.MatchResultRepository
 import com.tecnoscimmia.nine.model.Symbol
+import com.tecnoscimmia.nine.utils.Chronometer
 
 /*
  * This file defines the view-model for the game screen
@@ -26,10 +28,18 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 	private var selectedIndex 		= mutableStateOf(0)		// Index in which we will place the next symbol inserted by the user
 	private var differenceStr 		= mutableStateOf("")		// This string indicates the distances between the elements of secretKey and userKey
 	private var isMatchPaused		= mutableStateOf(false)
-	private var isMatchOver			= mutableStateOf(false)
+	private val chronometer			= Chronometer()					// Chronometer that measures the elapsed time during the match (used for the challenge game mode)
+	private val elapsedTime			= mutableStateOf("")
 
 	init {
 		currMatch.generateSecretKey()
+
+		// If we are playing in challenge mode then we need to setup the chronometer
+		if(settings.getGameMode() == GameSettings.GameModeSetting.CHALLENGE_GAME_MODE)
+		{
+			chronometer.setOnTickCallback { elapsedTime.value = chronometer.getElapsedTimeAsString() }
+			chronometer.start()
+		}
 	}
 
 	// Getter methods
@@ -39,10 +49,10 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 	fun getUserInput() : 		SnapshotStateList<Symbol>			{ return currMatch.getUserKey() }
 
 	fun getDifferenceString() : String								{ return differenceStr.value }
-	fun getTime() : 			String								{ return "XX:XX" /* TODO: Add implementation*/ }
+	fun getTime() : 			String								{ return elapsedTime.value }
 	fun getAttemptsNum() : 		UInt								{ return currMatch.getAttempts() }
 	fun isMatchPaused() : 		Boolean								{ return isMatchPaused.value }
-	fun isMatchOver() : 		Boolean								{ return isMatchOver.value }
+	fun isMatchOver() : 		Boolean								{ return currMatch.isMatchOver() }
 	fun isDebugModeActive() : 	Boolean								{ return settings.isDebugModeActive() }
 	fun getSecretKey() : 		String 								{ return currMatch.getSecretKeyAsString() }
 
@@ -91,8 +101,12 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 	fun pauseMatch()
 	{
 		if(isMatchPaused.value == false)
+		{
+			if(settings.getGameMode() == GameSettings.GameModeSetting.CHALLENGE_GAME_MODE)
+				chronometer.pause()
+
 			isMatchPaused.value = true
-		// TODO: pause the timer when we will have one :_D
+		}
 	}
 
 
@@ -100,8 +114,12 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 	fun resumeMatch()
 	{
 		if(isMatchPaused.value)
+		{
+			if(settings.getGameMode() == GameSettings.GameModeSetting.CHALLENGE_GAME_MODE)
+				chronometer.unpause()
+
 			isMatchPaused.value = false
-		// TODO: unpause the timer when we will have one :_D
+		}
 	}
 
 
@@ -122,11 +140,14 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 
 		differenceStr.value = currMatch.evaluate()			// Check differences between user key and secret key
 
-		if(differenceStr.value == "000000000")				// If the user key and the secret key are the same
+		if(currMatch.isMatchOver())							// If the user key and the secret key are the same then the match is over
 		{
 			when(settings.getGameMode())					// We do something according to the current game mode
 			{
-				GameSettings.GameModeSetting.CHALLENGE_GAME_MODE -> isMatchOver.value = true
+				GameSettings.GameModeSetting.CHALLENGE_GAME_MODE -> {
+					chronometer.pause()
+					saveMatchResult()
+				}
 				GameSettings.GameModeSetting.TRAINING_GAME_MODE -> startNewMatch()
 			}
 		}
@@ -136,13 +157,33 @@ class GameViewModel(private val appResources: Resources, private val settings: G
 
 	// Creates a new match and resets the properties of the view model that are related to the old match
 	fun startNewMatch()
-	{		currMatch.generateSecretKey()
-
+	{
 		currMatch = Match(symbolsSet = Symbol.generateSymbolsSubset(appResources = appResources, symbolsSetType = settings.getSymbolsSet()))
 		currMatch.generateSecretKey()
 		selectedIndex.value = 0
 		isMatchPaused.value = false
-		isMatchOver.value = false
+		differenceStr.value = ""
+
+		// If we are playing in challenge mode then we need to reset the chronometer
+		if(settings.getGameMode() == GameSettings.GameModeSetting.CHALLENGE_GAME_MODE)
+		{
+			chronometer.reset()
+			chronometer.start()
+			elapsedTime.value = ""
+		}
+	}
+
+
+	// Saves the data related to the current match
+	private fun saveMatchResult()
+	{
+		val currGameMode = settings.getGameMode()
+
+		// If the current game mode is training then we cannot save the match result
+		if(currGameMode == GameSettings.GameModeSetting.TRAINING_GAME_MODE)
+			return
+		// TODO: Because I'm saving the enum class name in the DB I now need to convert it to the UI representation when displaying the scoreboard!
+		resultRepo.addMatchResult(matchDuration = elapsedTime.value, gameMode = currGameMode.name)
 	}
 
 

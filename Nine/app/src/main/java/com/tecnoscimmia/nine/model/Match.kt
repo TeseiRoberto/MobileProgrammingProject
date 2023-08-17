@@ -3,6 +3,7 @@ package com.tecnoscimmia.nine.model
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.tecnoscimmia.nine.utils.Chronometer
 import kotlin.math.absoluteValue
 
 /*
@@ -15,6 +16,7 @@ class Match(private val symbolsSet: Array<Symbol>)
 	private var secretKey: 			Array<Symbol>							// Permutation of symbols generated randomly by the game
 	private val userKey 			= mutableStateListOf<Symbol>()			// Permutation inserted by the user
 	private val attemptsNum			= mutableStateOf(0u)				// Total Number of attempts
+	private val isMatchOver			= mutableStateOf(false)			// Signals when the secret key and the user key contains the same symbols in the same order
 
 
 	init {
@@ -27,6 +29,8 @@ class Match(private val symbolsSet: Array<Symbol>)
 	fun getSymbolsSet() : 	Array<Symbol>				{ return symbolsSet }			// Returns the symbols set used for this match
 	fun getAttempts() : 	UInt						{ return attemptsNum.value }
 	fun getUserKey() : 		SnapshotStateList<Symbol>	{ return userKey }
+	fun isMatchOver() : 	Boolean						{ return isMatchOver.value }
+
 
 	// This method returns the secret key as a string
 	fun getSecretKeyAsString() : String
@@ -88,7 +92,7 @@ class Match(private val symbolsSet: Array<Symbol>)
 
 			if(currSymbol in secretKey)							// If the chosen symbol is already in the secret key then we need to chose another one
 			{
-				for(k in symbolsSet.indices)					// What we do is simply move forward and backwards from the chosen index and the first
+				for(k in 1 until symbolsSet.size)			// What we do is simply move forward and backwards from the chosen index and the first
 				{												// symbol that we find that has not already been chosen gets picked
 					if(j + k < symbolsSet.size && symbolsSet[j + k] !in secretKey)
 					{
@@ -96,7 +100,7 @@ class Match(private val symbolsSet: Array<Symbol>)
 						break
 					}
 
-					if(j - k > 0 && symbolsSet[j - k] !in secretKey)
+					if(j - k >= 0 && symbolsSet[j - k] !in secretKey)
 					{
 						currSymbol = symbolsSet[j - k]
 						break
@@ -141,6 +145,21 @@ class Match(private val symbolsSet: Array<Symbol>)
 				(GameSettings.MAX_DIGITS_NUM - symbolsDistance).toString()
 
 		}
+
+		// TODO: This code checks if the game is over, it's pretty bad and I should do something better (from here)
+		var isOver = true
+		for(i in differencesStr)
+		{
+			if(i != '0')
+			{
+				isOver = false
+				break;
+			}
+		}
+
+		if(isOver)
+			isMatchOver.value = true
+		// (to here)
 
 		return differencesStr
 	}
