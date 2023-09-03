@@ -26,6 +26,7 @@ import com.tecnoscimmia.nine.ui.theme.NineTextStyle
  * This file contains definitions for all the widgets used in the settings screen
 */
 
+
 // A row that contains the name of a setting, the current value and a button that enables a drop down menu, this menu contains
 // all the available values for the setting. When the user select an entry from the drop down menu then onSettingChange is
 // called and the value of the entry is given as parameter

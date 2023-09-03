@@ -1,8 +1,11 @@
 package com.tecnoscimmia.nine.view.widgets
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,9 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,12 +25,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
+import com.tecnoscimmia.nine.R
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
 import com.tecnoscimmia.nine.ui.theme.NineIconStyle
+import com.tecnoscimmia.nine.ui.theme.NinePaddingStyle
 import com.tecnoscimmia.nine.ui.theme.NineTextStyle
 import com.tecnoscimmia.nine.view.NineScreen
 
@@ -97,3 +104,54 @@ fun OverlayContent(zIndex: Float, contentAlignment: Alignment = Alignment.Center
 		content()
 	}
 }
+
+
+// Default style for a card
+@Composable
+fun NineCard(isLandscape: Boolean, content: @Composable ColumnScope.() -> Unit)
+{
+	Card(modifier = Modifier.fillMaxWidth()
+		.padding(horizontal = if(isLandscape) NinePaddingStyle.largeHorPadding else NinePaddingStyle.mediumHorPadding)
+		.border(color = MaterialTheme.colorScheme.outline, width = 2.dp, shape = RoundedCornerShape(NineButtonStyle.cornerRadius)),
+		content = content
+	)
+
+}
+
+
+// A form that with 2 buttons that asks for a confirm from the user
+@Composable
+fun ConfirmationForm(isLandscape: Boolean, text: String, onConfirm: () -> Unit, onDismiss: () -> Unit)
+{
+	OverlayContent(2f)
+	{
+		NineCard(isLandscape = isLandscape)
+		{
+			Column(modifier = Modifier.fillMaxWidth().padding(NinePaddingStyle.extraSmallPadding)
+				, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceEvenly)
+			{
+				Text(text = text, modifier = Modifier.padding(NinePaddingStyle.extraSmallPadding),
+					textAlign = TextAlign.Center, fontWeight = NineTextStyle.simple.fontWeight,
+					fontSize = NineTextStyle.simple.fontSize, fontFamily = NineTextStyle.simple.fontFamily)
+
+				Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
+				{
+					// Confirm button
+					Button(onClick = onConfirm, shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+					{
+						Text(text = stringResource(R.string.settings_confirm), textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
+							fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
+					}
+
+					// Dismiss button
+					Button(onClick = onDismiss, shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+					{
+						Text(text = stringResource(R.string.settings_dismiss), textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
+							fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
+					}
+				}
+			}
+		}
+	}
+}
+

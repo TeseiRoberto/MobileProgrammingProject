@@ -86,6 +86,7 @@ class MainActivity : ComponentActivity()
 							val gameVM: GameViewModel = viewModel(factory = GameViewModel.Factory)
 							GameScreen(navigationCntrl = navigationCntrl, gameVM = gameVM, isLandscape = isLandscape)
 						}
+
 					}
 				}
 			}

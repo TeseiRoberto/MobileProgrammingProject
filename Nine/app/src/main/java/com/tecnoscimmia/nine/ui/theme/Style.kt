@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tecnoscimmia.nine.R
@@ -74,4 +75,32 @@ class NineIconStyle
 
 		val defaultModifier = Modifier.fillMaxSize()
 	}
+}
+
+
+class NinePaddingStyle
+{
+	companion object
+	{
+		var largeHorPadding 		= 128.dp
+		var largeVertPadding		= 128.dp
+		var mediumHorPadding 		= 64.dp
+		var mediumVertPadding 		= 64.dp
+		var normalHorPadding		= 32.dp
+		var normalVertPadding		= 32.dp
+
+		val extraSmallPadding		= 8.dp
+
+
+		// This function calculates some of the padding values according to the screen dimensions given
+		fun calculatePaddingValues(screenWidth: Dp, screenHeight: Dp)
+		{
+			largeHorPadding = screenWidth / 4
+			largeVertPadding = screenHeight / 4
+			mediumHorPadding = screenWidth / 6
+			mediumVertPadding = screenHeight / 6
+		}
+
+	}
+
 }

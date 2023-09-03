@@ -31,13 +31,17 @@
 
     <!-- Strings used in the settings screen -->
     <string name="settings_screen_title">Impostazioni</string>
-    <string name="settings_message_start_tutorial">Impara a giocare</string>
+    <string name="settings_message_clear_scoreboard">Cancella dati classifica</string>
     <string name="settings_message_apply_changes">Applica modifiche</string>
 
     <string name="settings_theme">Tema</string>
     <string name="settings_keyboard_layout">Layout tastiera</string>
     <string name="settings_symbols_set">Insieme di simboli</string>
     <string name="settings_debug_mode">debug mode</string>
+
+    <string name="settings_message_confirm_clear_scoreboard">Vuoi eliminare i dati della classifica?</string>
+    <string name="settings_confirm">si</string>
+    <string name="settings_dismiss">no</string>
 
 
     <!-- Available values for the theme setting -->
@@ -64,6 +68,12 @@
 
     <string name="settings_symbols_set_emoticons">emoticons</string>
     <string name="emoticons_symbols">0x1F600,0x1F602,0x1F605,0x1F607,0x1F608,0x1F609,0x1F60A,0x1F60B,0x1F60D,0x1F60E,0x1F60F,0x1F611,0x1F61D,0x1F621,0x1F62C,0x1F62E,0x1F631,0x1F922,0x1F929,0x1F92F,0x1F493,0x1F4A3,0x1F4A9</string>
+
+    <string name="settings_symbols_set_punctuation">punteggiatura</string>
+    <string name="punctuation_symbols">!,?,£,$,€,%,@,+,-,*,/,#,=</string>
+
+    <string name="settings_symbols_set_mixed">mischiati</string>
+
 
     <!-- Available values for the debug mode setting -->
     <string name="settings_debug_mode_active">attiva</string>

@@ -14,9 +14,9 @@ import androidx.room.RoomDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 
 /*
@@ -27,18 +27,17 @@ import java.util.Date
 // This class holds data (that are in the database) about a match played in the past, those data
 // will be used in the scoreboard screen (room uses this class to define the MatchResult table)
 @Entity
-data class MatchResult(@PrimaryKey(autoGenerate = true) var id: Int = 0, val time: String, val date: String, val gameMode: String)
+data class MatchResult(@PrimaryKey(autoGenerate = true) var id: Int = 0, var duration: String, var date: String, var gameMode: String)
 
 
-// This interface is implemented by the room library and will enable us to perform
-// insertion, removal and query of data stored in the db
+// This interface is implemented by the room library and will enable us to perform insertion, removal and query of data stored in the db
 @Dao
 interface MatchResultDao
 {
 	@Insert
 	suspend fun insertResult(result: MatchResult)				// Inserts a new match result in the db
 
-	@Query("SELECT * FROM MatchResult")							// Returns a list containing all the match results stored in the db
+	@Query("SELECT * FROM MatchResult ORDER BY duration")		// Returns a list containing all the match results stored in the db ordered by duration
 	suspend fun getAllResults() : List<MatchResult>
 
 	@Query("DELETE FROM MatchResult")							// Removes all the match results currently stored in the db
@@ -72,30 +71,39 @@ abstract class MatchResultDb : RoomDatabase()
 }
 
 
-class MatchResultRepository(private val dao: MatchResultDao)
+// Note: this class needs access to the settings repo so that it can convert internal representation of values to UI one
+class MatchResultRepository(private val dao: MatchResultDao, private val settingsRepo: SettingsRepository)
 {
-	//private val matchResultsData = dao.getAllResults()
 	private val matchResultsData = MutableLiveData<List<MatchResult>>()
 
-	// Inserts a new record in the MatchResult table of the db
-	fun addMatchResult(matchDuration: String, gameMode: String)
-	{
-		CoroutineScope(Dispatchers.Main).launch(Dispatchers.IO)
-		{
-			val today = Calendar.getInstance().time					// Get current date
-			val dateFormat = SimpleDateFormat.getDateInstance()		// Create a date formatter for the current locale
-			val date = dateFormat.format(today)						// Create string that specifies the current date
 
-			dao.insertResult(MatchResult(date = date, time = matchDuration, gameMode = gameMode))
+	// Inserts a new record in the MatchResult table of the db
+	fun addMatchResult(matchDuration: String, matchGameMode: String)
+	{
+		CoroutineScope(Dispatchers.IO).launch()
+		{
+			val today = LocalDate.now()
+			dao.insertResult(MatchResult(duration = matchDuration, date = today.toString(), gameMode = matchGameMode))
 		}
 	}
 
 
 	fun getAllResults() : LiveData<List<MatchResult>>
 	{
-		CoroutineScope(Dispatchers.Main).launch(Dispatchers.IO)
+		CoroutineScope(Dispatchers.IO).launch()
 		{
-			matchResultsData.postValue(dao.getAllResults())
+			val dbData = dao.getAllResults()
+
+			for(el in dbData)
+			{
+				el.gameMode = settingsRepo.gameModeInternalToUI(GameSettings.GameModeSetting.valueOf(el.gameMode))
+
+				// Convert date to user locale
+				val date = LocalDate.parse(el.date)
+				el.date = date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)).toString()
+			}
+
+			matchResultsData.postValue(dbData)
 		}
 
 		return matchResultsData
@@ -105,10 +113,11 @@ class MatchResultRepository(private val dao: MatchResultDao)
 	// Deletes all the elements in the MatchResult table
 	fun deleteAllResults()
 	{
-		CoroutineScope(Dispatchers.Main).launch(Dispatchers.IO)
+		CoroutineScope(Dispatchers.IO).launch()
 		{
 			dao.clearAllResults()
 		}
 	}
 }
+
 

@@ -30,8 +30,10 @@ import androidx.navigation.NavHostController
 import com.tecnoscimmia.nine.R
 import com.tecnoscimmia.nine.model.GameSettings
 import com.tecnoscimmia.nine.model.Symbol
+import com.tecnoscimmia.nine.model.SymbolSet
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
 import com.tecnoscimmia.nine.ui.theme.NineIconStyle
+import com.tecnoscimmia.nine.ui.theme.NinePaddingStyle
 import com.tecnoscimmia.nine.ui.theme.NineTextStyle
 import com.tecnoscimmia.nine.view.NineScreen
 import com.tecnoscimmia.nine.viewModel.GameViewModel
@@ -43,43 +45,41 @@ import com.tecnoscimmia.nine.viewModel.GameViewModel
 
 // A button that contains a symbol, this is used to implement the Keyboard widget
 @Composable
-fun SymbolButton(enabled: Boolean, width: Dp, height: Dp, symbol: String, onClick: (String) -> Unit)
+fun SymbolButton(enabled: Boolean, width: Dp, height: Dp, symbol: Symbol, onClick: (Symbol) -> Unit)
 {
 	Button(modifier = Modifier.size(width = width, height = height),
 		enabled = enabled, onClick = { onClick(symbol) }, shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
 	{
-		Text(text = symbol, textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
+		Text(text = symbol.value, textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
 			fontSize = NineTextStyle.title.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
 	}
 }
 
 
-// A collection of SymbolButtons placed accordingly to the given layout and the isLandscape value, when one of the buttons is
+// A collection of SymbolButtons placed accordingly to the given layout, when one of the buttons is
 // clicked the onBtnClick callback is called and the symbol associated to the clicked button is passed as parameter
 @Composable
-fun Keyboard(modifier: Modifier, isLandscape: Boolean, enabled: Boolean, symbolSet: Array<Symbol>, keyboardLayout: GameSettings.KeyboardLayoutSetting,
-			 buttonsPadding: Dp, onBtnClick: (String) -> Unit)
+fun Keyboard(modifier: Modifier, enabled: Boolean, symbolSet: SymbolSet, keyboardLayout: GameSettings.KeyboardLayoutSetting,
+			 buttonsPadding: Dp, onBtnClick: (Symbol) -> Unit)
 {
 	// Choose the number of buttons to place on each line of the keyboard according to the given layout
 	val numOfCols = when(keyboardLayout)
 	{
 		GameSettings.KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT -> 5
-
-		// The 3x3 layout can be used only in portrait mode, if we are in landscape we fallback to TWO_LINES layout
-		GameSettings.KeyboardLayoutSetting.THREE_BY_THREE_KBD_LAYOUT -> if(!isLandscape) 3 else 5
+		GameSettings.KeyboardLayoutSetting.THREE_BY_THREE_KBD_LAYOUT -> 3
 	}
 
 	Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center)
 	{
 		var i = 0
-		while(i < symbolSet.size)
+		while(i < symbolSet.data.size)
 		{
 			Row(modifier = Modifier.fillMaxWidth().padding(vertical = buttonsPadding), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.Top)
 			{
 				var j = 0
-				while(j < numOfCols && i < symbolSet.size)
+				while(j < numOfCols && i < symbolSet.data.size)
 				{
-					SymbolButton(enabled = enabled, width = NineButtonStyle.keyboardBtnWidth, height = NineButtonStyle.keyboardBtnHeight, symbol = symbolSet[i].value, onClick = onBtnClick)
+					SymbolButton(enabled = enabled, width = NineButtonStyle.keyboardBtnWidth, height = NineButtonStyle.keyboardBtnHeight, symbol = symbolSet.data[i], onClick = onBtnClick)
 					i++
 					j++
 				}
@@ -95,10 +95,11 @@ fun GameInfoPanel(isLandscape: Boolean, gameVM: GameViewModel)
 {
 	Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
 	{
-		Card(modifier = Modifier.fillMaxWidth().padding(horizontal = if(isLandscape) 128.dp else 32.dp),
+		Card(modifier = Modifier.fillMaxWidth().padding(horizontal = if(isLandscape) NinePaddingStyle.largeHorPadding else NinePaddingStyle.normalHorPadding),
 			shape = RoundedCornerShape(bottomStart = NineButtonStyle.cornerRadius, bottomEnd = NineButtonStyle.cornerRadius))
 		{
-			Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
+			Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+				horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
 			{
 					// Hourglass icon
 					Icon(painter = painterResource(NineIconStyle.hourglass), contentDescription = null,
@@ -128,8 +129,7 @@ fun InputRow(userInput: SnapshotStateList<Symbol>, currIndex: Int, differencesSt
 	{
 		Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
 		{
-			//for(i in userInput.indices)							// For each symbol in the user input
-			for(i in 0 until GameSettings.MAX_DIGITS_NUM)
+			for(i in 0 until GameSettings.MAX_DIGITS_NUM)	// For each symbol in the user input
 			{
 				Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center)
 				{
@@ -185,8 +185,8 @@ fun GameControlPanel(isLandscape: Boolean, gameVM: GameViewModel)
 			}
 
 			Keyboard(modifier = Modifier.fillMaxWidth().weight(0.5f),
-				isLandscape = isLandscape, enabled = areBtnsEnabled,
-				symbolSet = gameVM.getSymbolsSet(), keyboardLayout = gameVM.getKeyboardLayout(),
+				enabled = areBtnsEnabled, symbolSet = gameVM.getSymbolsSet(),
+				keyboardLayout = if(isLandscape) GameSettings.KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT else gameVM.getKeyboardLayout(),
 				buttonsPadding = 6.dp, onBtnClick = { symbol -> gameVM.insertSymbol(symbol = symbol) })
 
 			Column(modifier = Modifier.width(width = NineButtonStyle.normalWidth),
@@ -204,8 +204,8 @@ fun GameControlPanel(isLandscape: Boolean, gameVM: GameViewModel)
 		Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 		{
 			Keyboard(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
-				isLandscape = isLandscape, enabled = areBtnsEnabled,
-				symbolSet = gameVM.getSymbolsSet(), keyboardLayout = gameVM.getKeyboardLayout(),
+				enabled = areBtnsEnabled, symbolSet = gameVM.getSymbolsSet(),
+				keyboardLayout = if(isLandscape) GameSettings.KeyboardLayoutSetting.TWO_LINES_KBD_LAYOUT else gameVM.getKeyboardLayout(),
 				buttonsPadding = 6.dp, onBtnClick = { symbol -> gameVM.insertSymbol(symbol = symbol) })
 
 			Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically)
@@ -236,16 +236,17 @@ fun PauseMenu(isLandscape: Boolean, navigationCntrl: NavHostController, gameVM: 
 {
 	OverlayContent(zIndex = 2f)
 	{
-		Card(modifier = Modifier.fillMaxWidth()
-			.padding(horizontal = if(isLandscape) 128.dp else 32.dp))
+		NineCard(isLandscape = isLandscape)
 		{
-			Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceEvenly)
+			Column(modifier = Modifier.fillMaxWidth().padding(NinePaddingStyle.extraSmallPadding)
+				, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceEvenly)
 			{
 				ScreenTitle(title = stringResource(R.string.pause_menu_title))
 
 				// Resume button
 				Button(onClick = gameVM::resumeMatch,
-					shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+					shape = RoundedCornerShape(NineButtonStyle.cornerRadius),
+					modifier = Modifier.padding(vertical = NinePaddingStyle.extraSmallPadding))
 				{
 					Text(text = stringResource(R.string.pause_menu_resume), textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
 						fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
@@ -253,7 +254,8 @@ fun PauseMenu(isLandscape: Boolean, navigationCntrl: NavHostController, gameVM: 
 
 				// Quit button
 				Button(onClick = { navigationCntrl.popBackStack(route = NineScreen.MainMenu.name, inclusive = false) },
-					shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+					shape = RoundedCornerShape(NineButtonStyle.cornerRadius),
+					modifier = Modifier.padding(vertical = NinePaddingStyle.extraSmallPadding))
 				{
 					Text(text = stringResource(R.string.pause_menu_quit), textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
 						fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
@@ -271,16 +273,17 @@ fun WinPanel(isLandscape: Boolean, navigationCntrl: NavHostController, gameVM: G
 {
 	OverlayContent(zIndex = 2f)
 	{
-		Card(modifier = Modifier.fillMaxWidth()
-			.padding(horizontal = if(isLandscape) 128.dp else 32.dp))
+		NineCard(isLandscape = isLandscape)
 		{
-			Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceEvenly)
+			Column(modifier = Modifier.fillMaxWidth().padding(NinePaddingStyle.extraSmallPadding)
+				, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceEvenly)
 			{
 				ScreenTitle(title = stringResource(R.string.game_screen_win_message))
 
 				// Play again button
 				Button(onClick = gameVM::startNewMatch,
-					shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+					shape = RoundedCornerShape(NineButtonStyle.cornerRadius),
+					modifier = Modifier.padding(vertical = NinePaddingStyle.extraSmallPadding))
 				{
 					Text(text = stringResource(R.string.game_screen_play_again), textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
 						fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
@@ -288,7 +291,8 @@ fun WinPanel(isLandscape: Boolean, navigationCntrl: NavHostController, gameVM: G
 
 				// Quit button
 				Button(onClick = { navigationCntrl.popBackStack(route = NineScreen.MainMenu.name, inclusive = false) },
-					shape = RoundedCornerShape(NineButtonStyle.cornerRadius))
+					shape = RoundedCornerShape(NineButtonStyle.cornerRadius),
+					modifier = Modifier.padding(vertical = NinePaddingStyle.extraSmallPadding))
 				{
 					Text(text = stringResource(R.string.game_screen_back_to_menu), textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
 						fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)

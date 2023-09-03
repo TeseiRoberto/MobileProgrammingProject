@@ -8,21 +8,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.tecnoscimmia.nine.R
-import com.tecnoscimmia.nine.model.GameSettings
 import com.tecnoscimmia.nine.ui.theme.NineButtonStyle
-import com.tecnoscimmia.nine.ui.theme.NineTheme
+import com.tecnoscimmia.nine.view.widgets.ConfirmationForm
 import com.tecnoscimmia.nine.view.widgets.GameControlPanel
 import com.tecnoscimmia.nine.view.widgets.GameInfoPanel
 import com.tecnoscimmia.nine.view.widgets.GameModeSelector
@@ -48,83 +47,8 @@ import com.tecnoscimmia.nine.viewModel.SettingsViewModel
 
 
 // Enumeration of all the screens that makes the application
-enum class NineScreen { MainMenu, Scoreboard, Settings, Game, Tutorial }
+enum class NineScreen { MainMenu, Scoreboard, Settings, Game }
 
-@Preview
-@Composable
-fun Test()
-{
-	NineTheme(appTheme = GameSettings.ThemeSetting.LIGHT_THEME)
-	{
-		Surface(modifier = Modifier.fillMaxSize())
-		{
-			/*Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
-			{
-				MenuPanelPortrait(onClickSettings = { }, onClickScoreboard = { })
-
-				GameStarter(230.dp, 300.dp, onSwipe = { }, swipeThreshold = 300f)
-				GameModeSelector("training", onLeftArrowClick = { }, onRightArrowClick = { })
-			}*/
-
-
-			// Settings screen
-			// If device is in landscape mode then settings are positioned into 2 adjacent columns, otherwise
-			// they are all in the same column. We define the settings UI here as 2 lambdas to avoid code repetition.
-			val settingSet1 = @Composable {
-				SettingRow(settingName = stringResource(id = R.string.settings_theme),				// Setting to change theme
-					availableValues = listOf(""),
-					currValue = "value",
-					onSettingChange = {}
-				)
-
-				SettingRow(settingName = stringResource(id = R.string.settings_symbols_set),		// Setting to change the symbols set
-					availableValues = listOf(""),
-					currValue = "value",
-					onSettingChange = {}
-				)
-			}
-
-			val settingSet2 = @Composable {
-				SettingRow(settingName = stringResource(id = R.string.settings_keyboard_layout),	// Setting to change keyboard layout
-					availableValues = listOf(""),
-					currValue = "value",
-					onSettingChange = {}
-				)
-
-				SettingRow(settingName = stringResource(id = R.string.settings_debug_mode),	// Setting to change the debug mode
-					availableValues = listOf(""),
-					currValue = "value",
-					onSettingChange = {}
-				)
-			}
-
-			Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
-			{
-				ScreenTitle(title = stringResource(id = R.string.settings_screen_title))
-					settingSet1()
-					settingSet2()
-
-				Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-					horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically)
-				{
-					// Apply changes button
-					Button(modifier = Modifier.weight(0.5f).padding(12.dp), enabled = true,
-						shape = RoundedCornerShape(NineButtonStyle.cornerRadius),
-						onClick = {},
-						content = { Text(text = stringResource(R.string.settings_message_apply_changes)) }
-					)
-
-					// Start tutorial button
-					Button(modifier = Modifier.weight(0.5f).padding(12.dp), shape = RoundedCornerShape(NineButtonStyle.cornerRadius),
-						onClick = { /* TODO: Uncomment when tutorial screen is implemented!!! navigationCntrl.navigate(route = NineScreen.Tutorial.name)*/ },
-						content = { Text(text = stringResource(R.string.settings_message_start_tutorial)) }
-					)
-				}
-			}
-		}
-
-	}
-}
 
 @Composable
 fun MenuScreen(navigationCntrl : NavHostController, menuVM: MenuViewModel, isLandscape: Boolean)
@@ -172,6 +96,9 @@ fun ScoreboardScreen(navigationCntrl: NavHostController, scoreboardVM: Scoreboar
 @Composable
 fun SettingsScreen(navigationCntrl: NavHostController, settingsVM: SettingsViewModel, isLandscape: Boolean)
 {
+	// Indicates if the confirmation form must be shown (this form is used by the clear scoreboard button)
+	val confirmationRequired = remember { mutableStateOf(false) }
+
 	// If device is in landscape mode then settings are positioned into 2 adjacent columns, otherwise
 	// they are all in the same column. We define the settings UI here as 2 lambdas to avoid code repetition.
 	val settingSet1 = @Composable {
@@ -212,12 +139,14 @@ fun SettingsScreen(navigationCntrl: NavHostController, settingsVM: SettingsViewM
 			{
 				Column(modifier = Modifier
 					.fillMaxWidth()
-					.weight(0.5f), horizontalAlignment = Alignment.CenterHorizontally,
+					.weight(0.5f),
+					horizontalAlignment = Alignment.CenterHorizontally,
 					verticalArrangement = Arrangement.SpaceBetween, content = { settingSet1() } )
 
 				Column(modifier = Modifier
 					.fillMaxWidth()
-					.weight(0.5f), horizontalAlignment = Alignment.CenterHorizontally,
+					.weight(0.5f),
+					horizontalAlignment = Alignment.CenterHorizontally,
 					verticalArrangement = Arrangement.SpaceBetween, content = { settingSet2() } )
 			}
 		} else {											// Otherwise put one on top of the other
@@ -239,18 +168,26 @@ fun SettingsScreen(navigationCntrl: NavHostController, settingsVM: SettingsViewM
 				content = { Text(text = stringResource(R.string.settings_message_apply_changes)) }
 			)
 
-			// Start tutorial button
+			// Clear scoreboard button
 			Button(modifier = Modifier
 				.weight(0.5f)
 				.padding(12.dp), shape = RoundedCornerShape(NineButtonStyle.cornerRadius),
-				onClick = { /* TODO: Uncomment when tutorial screen is implemented!!! navigationCntrl.navigate(route = NineScreen.Tutorial.name)*/ },
-				content = { Text(text = stringResource(R.string.settings_message_start_tutorial)) }
+				onClick = { confirmationRequired.value = true },
+				content = { Text(text = stringResource(R.string.settings_message_clear_scoreboard)) }
 			)
 		}
 
 		// Go back button
 		GoBackButton(navigationCntrl)
 	}
+
+	// We need to display a confirmation form when the clear scoreboard button is pressed
+	if(confirmationRequired.value)
+		ConfirmationForm(isLandscape = isLandscape, text = stringResource(R.string.settings_message_confirm_clear_scoreboard),
+			onConfirm = {
+				settingsVM.clearScoreboardData()
+				confirmationRequired.value = false },
+			onDismiss = { confirmationRequired.value = false } )
 }
 
 
@@ -259,12 +196,13 @@ fun GameScreen(navigationCntrl: NavHostController, gameVM: GameViewModel, isLand
 {
 	Column(modifier = Modifier
 		.fillMaxSize()
-		.zIndex(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
+		.zIndex(1f),
+		horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween)
 	{
 		GameInfoPanel(isLandscape = isLandscape, gameVM = gameVM)
 		InputRow(userInput = gameVM.getUserInput(), currIndex = gameVM.getSelectedIndex(), differencesStr = gameVM.getDifferenceString())
 
-		// If the app is running in debug mode then we can show the secret key
+		// If the app is running in debug mode then we show the secret key
 		if(gameVM.isDebugModeActive())
 			Text(text = "secret key is: ${gameVM.getSecretKey()}")
 
@@ -280,5 +218,3 @@ fun GameScreen(navigationCntrl: NavHostController, gameVM: GameViewModel, isLand
 		WinPanel(isLandscape = isLandscape, navigationCntrl = navigationCntrl, gameVM = gameVM)
 
 }
-
-

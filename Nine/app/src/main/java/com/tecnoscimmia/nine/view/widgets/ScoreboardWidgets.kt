@@ -68,14 +68,15 @@ fun Scoreboard(data: List<MatchResult>, widthOccupation: Float, heightOccupation
 			Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically)
 			{
 				Text(text = stringResource(id = R.string.scoreboard_message_is_empty), modifier = Modifier.padding(vertical = 48.dp),
-					fontWeight = NineTextStyle.subTitle.fontWeight, fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
+					textAlign = TextAlign.Center, fontWeight = NineTextStyle.subTitle.fontWeight,
+					fontSize = NineTextStyle.subTitle.fontSize, fontFamily = NineTextStyle.subTitle.fontFamily)
 			}
 		} else {
 			LazyColumn(modifier = Modifier.fillMaxWidth())
 			{
 				itemsIndexed(data)
 				{ index, match ->
-					ScoreboardEntry(rank = index + 1, time = match.time, date = match.date, gameMode = match.gameMode)
+					ScoreboardEntry(rank = index + 1, time = match.duration, date = match.date, gameMode = match.gameMode)
 				}
 			}
 		}
